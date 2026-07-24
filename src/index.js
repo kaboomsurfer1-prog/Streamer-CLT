@@ -33,10 +33,11 @@ async function main() {
     intents: [GatewayIntentBits.Guilds]
   });
 
+  const webServer = startHealthServer(store, client);
+
   client.once(Events.ClientReady, async () => {
     logger.info(`Online come ${client.user.tag}`);
     await registerGuildCommands(client, guildId);
-    startHealthServer(store, client);
     startNotificationLoop(client, store);
   });
 
@@ -50,12 +51,14 @@ async function main() {
 
   process.on("SIGINT", () => {
     logger.info("SIGINT ricevuto, chiusura bot.");
+    if (webServer) webServer.close();
     client.destroy();
     process.exit(0);
   });
 
   process.on("SIGTERM", () => {
     logger.info("SIGTERM ricevuto, chiusura bot.");
+    if (webServer) webServer.close();
     client.destroy();
     process.exit(0);
   });

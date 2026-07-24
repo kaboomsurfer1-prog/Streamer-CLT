@@ -640,8 +640,7 @@ async function handleRequest(request, response, store, client) {
 }
 
 function startDashboardServer(store, client) {
-  const port = process.env.PORT || process.env.DASHBOARD_PORT;
-  if (!port) return null;
+  const port = process.env.PORT || process.env.DASHBOARD_PORT || 8080;
 
   const server = http.createServer(async (request, response) => {
     try {

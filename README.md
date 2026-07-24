@@ -70,6 +70,7 @@ DISCORD_GUILD_ID=1505903653079351357
 ALLOWED_ROLE_IDS=1505905849774641243,1519377368354132110,1505906085901504522
 DATA_DIR=/data
 CHECK_INTERVAL_SECONDS=120
+PORT=8080
 TWITCH_CLIENT_ID=client_id_twitch
 TWITCH_CLIENT_SECRET=client_secret_twitch
 YOUTUBE_API_KEY=api_key_youtube
@@ -97,7 +98,7 @@ Permisiuni recomandate:
 
 ## Dashboard web
 
-Pe Railway, dupa deploy, deschide URL-ul serviciului. Prima pagina este dashboard-ul.
+Pe Railway, dupa deploy, deschide URL-ul serviciului. Prima pagina este dashboard-ul. In `Settings > Networking`, domeniul public trebuie sa aiba target port `8080` daca setezi `PORT=8080`.
 
 Variabila obligatorie:
 
