@@ -4,7 +4,7 @@ const { URL } = require("node:url");
 const { ChannelType } = require("discord.js");
 const { getGuildId } = require("./config");
 const { describeSource, platformLabel } = require("./messages");
-const { sendManualNotification, sendTestNotification } = require("./notifications");
+const { checkSourceNow, sendManualNotification, sendTestNotification } = require("./notifications");
 const { validatePlatformLink, validateSourceInput } = require("./commands");
 const logger = require("./logger");
 
@@ -356,6 +356,16 @@ async function runSourceAction(action, source, store, client, payload) {
     return "Notificarea de test a fost trimisa.";
   }
 
+  if (action === "check") {
+    const result = await checkSourceNow(client, store, source);
+    if (result.error) throw new Error(result.error);
+    if (result.notified) return "Live detectat si notificarea a fost trimisa.";
+    if (result.live) return "Live detectat, dar notificarea nu a fost trimisa.";
+    return source.type === "live"
+      ? "Control facut: live nu este detectat acum."
+      : "Control facut: continut nou nu este detectat acum.";
+  }
+
   if (action === "manual") {
     await sendManualNotification(client, store, source, {
       title: payload.title || "Live stream",
@@ -620,7 +630,7 @@ async function handleRequest(request, response, store, client) {
     return;
   }
 
-  const actionMatch = url.pathname.match(/^\/api\/sources\/(\d+)\/(test|manual|toggle|delete)$/);
+  const actionMatch = url.pathname.match(/^\/api\/sources\/(\d+)\/(test|check|manual|toggle|delete)$/);
   if (request.method === "POST" && actionMatch) {
     const source = findSource(store, actionMatch[1]);
     if (!source) throw new Error(`Sursa #${actionMatch[1]} nu a fost gasita.`);
@@ -1038,6 +1048,7 @@ const JS = `
       '</div>' +
       '<div class="source-actions">' +
         '<button class="small" data-action="test" data-id="' + source.id + '">Test</button>' +
+        '<button class="small" data-action="check" data-id="' + source.id + '">Verifica ora</button>' +
         '<button class="small" data-action="manual" data-id="' + source.id + '">Anunta</button>' +
         '<button class="small secondary" data-action="edit" data-id="' + source.id + '">Modifica</button>' +
         '<button class="small secondary" data-action="toggle" data-id="' + source.id + '">' + (source.enabled && !source.manualOnly ? "Opreste" : "Auto") + '</button>' +

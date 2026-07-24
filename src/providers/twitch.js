@@ -26,7 +26,8 @@ async function getAccessToken() {
   });
 
   const response = await fetch(`https://id.twitch.tv/oauth2/token?${params.toString()}`, {
-    method: "POST"
+    method: "POST",
+    signal: AbortSignal.timeout(15000)
   });
 
   if (!response.ok) {
@@ -49,7 +50,8 @@ async function getTwitchLive(source) {
     headers: {
       Authorization: `Bearer ${token}`,
       "Client-Id": clientId
-    }
+    },
+    signal: AbortSignal.timeout(15000)
   });
 
   if (!response.ok) {

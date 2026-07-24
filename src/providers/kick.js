@@ -12,7 +12,8 @@ async function getKickLive(source) {
     headers: {
       Accept: "application/json, text/plain, */*",
       "User-Agent": "Mozilla/5.0 Bot-Streamers-CLT/1.0"
-    }
+    },
+    signal: AbortSignal.timeout(15000)
   });
 
   if (response.status === 404) return null;

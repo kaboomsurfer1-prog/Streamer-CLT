@@ -38,7 +38,8 @@ async function youtubeGet(path, params) {
     headers: {
       Accept: "application/json",
       "User-Agent": "Bot-Streamers-CLT/1.0"
-    }
+    },
+    signal: AbortSignal.timeout(15000)
   });
 
   if (!response.ok) {

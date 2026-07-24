@@ -81,7 +81,8 @@ async function getTikTokLive(source) {
       Accept: "application/json",
       "User-Agent": "Bot-Streamers-CLT/1.0",
       "x-api-key": apiKey
-    }
+    },
+    signal: AbortSignal.timeout(15000)
   });
 
   const payload = await parseTikToolsResponse(response);

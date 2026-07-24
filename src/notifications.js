@@ -1,4 +1,4 @@
-﻿const { ChannelType } = require("discord.js");
+const { ChannelType } = require("discord.js");
 const { nowIso } = require("./storage");
 const { defaultPlatformUrl, formatMessage } = require("./messages");
 const { getLatestRssItem } = require("./providers/rss");
@@ -155,23 +155,21 @@ async function updateSourceAfterCheck(store, source, event, notified, errorMessa
   await store.updateSource(source.id, patch);
 }
 
-async function checkSource(client, store, source) {
-  if (!source.enabled || source.manualOnly) return;
+async function checkSource(client, store, source, options = {}) {
+  if (!source.enabled || source.manualOnly) {
+    return { checked: false, notified: false, live: false, message: "Sursa este oprita sau manuala." };
+  }
+
   if (!sourceSupportsCheck(source)) {
-    await updateSourceAfterCheck(
-      store,
-      source,
-      null,
-      false,
-      `Sursa nesuportata: ${source.type}/${source.platform}`
-    );
-    return;
+    const errorMessage = `Sursa nesuportata: ${source.type}/${source.platform}`;
+    await updateSourceAfterCheck(store, source, null, false, errorMessage);
+    return { checked: true, notified: false, live: false, error: errorMessage };
   }
 
   try {
     const event = await getLatestEvent(source);
     const data = store.snapshot();
-    const notify = shouldNotify(source, event);
+    const notify = options.forceNotify === true ? Boolean(event) : shouldNotify(source, event);
 
     if (notify) {
       await sendNotification(client, data, source, event);
@@ -179,17 +177,52 @@ async function checkSource(client, store, source) {
     }
 
     await updateSourceAfterCheck(store, source, event, notify);
+    return {
+      checked: true,
+      notified: notify,
+      live: Boolean(event),
+      eventId: event?.id || null,
+      title: event?.title || null,
+      url: event?.url || null
+    };
   } catch (error) {
     logger.warn(`Verificare esuata pentru sursa #${source.id}: ${error.message}`);
     await updateSourceAfterCheck(store, source, null, false, error.message);
+    return { checked: true, notified: false, live: false, error: error.message };
   }
+}
+
+async function checkSourceNow(client, store, source) {
+  const checkableSource = {
+    ...source,
+    enabled: true,
+    manualOnly: false,
+    notifyOnFirstCheck: true
+  };
+  return checkSource(client, store, checkableSource, { forceNotify: true });
 }
 
 async function checkAllSources(client, store) {
   const data = store.snapshot();
+  const summary = {
+    total: data.sources.length,
+    checked: 0,
+    skipped: 0,
+    live: 0,
+    notified: 0,
+    errors: 0
+  };
+
   for (const source of data.sources) {
-    await checkSource(client, store, source);
+    const result = await checkSource(client, store, source);
+    if (result.checked) summary.checked += 1;
+    else summary.skipped += 1;
+    if (result.live) summary.live += 1;
+    if (result.notified) summary.notified += 1;
+    if (result.error) summary.errors += 1;
   }
+
+  return summary;
 }
 
 function startNotificationLoop(client, store) {
@@ -199,13 +232,32 @@ function startNotificationLoop(client, store) {
     if (running) return;
     running = true;
     try {
-      await checkAllSources(client, store);
+      const summary = await checkAllSources(client, store);
+      logger.info(
+        `Ciclu verificare: ${summary.checked}/${summary.total} verificate, ${summary.live} live, ` +
+          `${summary.notified} notificari, ${summary.errors} erori, ${summary.skipped} sarite (manual/oprite)`
+      );
+    } catch (error) {
+      logger.error("Eroare in ciclul de verificare notificari", error);
     } finally {
       running = false;
     }
   }
 
-  const intervalSeconds = store.snapshot().settings.checkIntervalSeconds;
+  const data = store.snapshot();
+  const autoCount = data.sources.filter((source) => source.enabled && !source.manualOnly).length;
+  const manualCount = data.sources.filter((source) => source.manualOnly).length;
+  const offCount = data.sources.filter((source) => !source.enabled && !source.manualOnly).length;
+  logger.info(
+    `Surse configurate: ${data.sources.length} total | ${autoCount} auto | ${manualCount} manual | ${offCount} oprite`
+  );
+  if (data.sources.length > 0 && autoCount === 0) {
+    logger.warn(
+      "Nicio sursa in mod AUTO: notificarile automate NU vor porni. Pune sursele pe Auto din dashboard sau cu comanda de editare."
+    );
+  }
+
+  const intervalSeconds = data.settings.checkIntervalSeconds;
   const interval = Math.max(60, Number(intervalSeconds) || 120) * 1000;
   setInterval(tick, interval);
   setTimeout(tick, 5000);
@@ -247,6 +299,7 @@ async function sendManualNotification(client, store, source, input = {}) {
 
 module.exports = {
   checkAllSources,
+  checkSourceNow,
   getLatestEvent,
   sendManualNotification,
   sendTestNotification,
