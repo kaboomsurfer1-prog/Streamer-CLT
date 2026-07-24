@@ -67,9 +67,9 @@ function formatMessage(template, source, event) {
 
 function describeSource(source) {
   const state = source.manualOnly ? "MANUAL" : source.enabled ? "ON" : "OFF";
-  const destination = source.channelId ? `<#${source.channelId}>` : "canale default";
+  const destination = source.channelId ? `<#${source.channelId}>` : "canal implicit";
   const feed = source.feedUrl ? " | feed" : "";
-  const error = source.lastError ? ` | errore: ${source.lastError}` : "";
+  const error = source.lastError ? ` | eroare: ${source.lastError}` : "";
   return `#${source.id} [${state}] ${source.type}/${platformLabel(source.platform)} ${source.displayName} -> ${destination}${feed}${error}`;
 }
 

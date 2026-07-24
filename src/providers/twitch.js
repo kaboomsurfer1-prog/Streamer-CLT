@@ -6,7 +6,7 @@ function requireTwitchCredentials() {
   const clientSecret = process.env.TWITCH_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    throw new Error("TWITCH_CLIENT_ID e TWITCH_CLIENT_SECRET sono obbligatori per Twitch.");
+    throw new Error("TWITCH_CLIENT_ID si TWITCH_CLIENT_SECRET sunt obligatorii pentru Twitch.");
   }
 
   return { clientId, clientSecret };
@@ -30,7 +30,7 @@ async function getAccessToken() {
   });
 
   if (!response.ok) {
-    throw new Error(`Errore token Twitch: HTTP ${response.status}`);
+    throw new Error(`Eroare token Twitch: HTTP ${response.status}`);
   }
 
   const payload = await response.json();
@@ -53,7 +53,7 @@ async function getTwitchLive(source) {
   });
 
   if (!response.ok) {
-    throw new Error(`Errore Twitch streams: HTTP ${response.status}`);
+    throw new Error(`Eroare Twitch streams: HTTP ${response.status}`);
   }
 
   const payload = await response.json();

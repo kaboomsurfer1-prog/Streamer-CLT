@@ -36,40 +36,40 @@ const LIVE_NATIVE_PLATFORMS = new Set(["twitch", "youtube", "kick"]);
 
 function addTypeOption(option) {
   return option
-    .setName("tipo")
-    .setDescription("Tipo di notifica")
+    .setName("tip")
+    .setDescription("Tipul notificarii")
     .setRequired(true)
     .addChoices(...TYPES);
 }
 
 function addOptionalTypeOption(option) {
   return option
-    .setName("tipo")
-    .setDescription("Tipo di notifica")
+    .setName("tip")
+    .setDescription("Tipul notificarii")
     .setRequired(false)
     .addChoices(...TYPES);
 }
 
 function addPlatformOption(option) {
   return option
-    .setName("piattaforma")
-    .setDescription("Piattaforma da controllare")
+    .setName("platforma")
+    .setDescription("Platforma care trebuie verificata")
     .setRequired(true)
     .addChoices(...PLATFORMS);
 }
 
 function addOptionalPlatformOption(option) {
   return option
-    .setName("piattaforma")
-    .setDescription("Piattaforma da controllare")
+    .setName("platforma")
+    .setDescription("Platforma care trebuie verificata")
     .setRequired(false)
     .addChoices(...PLATFORMS);
 }
 
 function addTextChannelOption(option, required = true) {
   return option
-    .setName("canale")
-    .setDescription("Canale Discord dove inviare le notifiche")
+    .setName("canal")
+    .setDescription("Canalul Discord unde se trimit notificarile")
     .setRequired(required)
     .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
 }
@@ -77,7 +77,7 @@ function addTextChannelOption(option, required = true) {
 function addFeedOption(option) {
   return option
     .setName("feed")
-    .setDescription("Feed RSS/Atom https per video o piattaforme senza API")
+    .setDescription("Feed RSS/Atom https pentru video sau platforme fara API")
     .setRequired(false)
     .setMaxLength(500);
 }
@@ -85,64 +85,64 @@ function addFeedOption(option) {
 function buildCommands() {
   const streamer = new SlashCommandBuilder()
     .setName("streamer")
-    .setDescription("Gestisce streamer e sorgenti video")
+    .setDescription("Gestioneaza streamerii si sursele video")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("aggiungi")
-        .setDescription("Aggiunge una nuova sorgente")
+        .setName("adauga")
+        .setDescription("Adauga o sursa noua")
         .addStringOption(addTypeOption)
         .addStringOption(addPlatformOption)
         .addStringOption((option) =>
           option
-            .setName("utente")
-            .setDescription("Username, handle, channel id YouTube o nome sorgente")
+            .setName("utilizator")
+            .setDescription("Username, handle, channel id YouTube sau numele sursei")
             .setRequired(true)
             .setMaxLength(120)
         )
         .addChannelOption((option) => addTextChannelOption(option, false))
         .addStringOption((option) =>
           option
-            .setName("nome")
-            .setDescription("Nome visualizzato nel messaggio")
+            .setName("nume")
+            .setDescription("Numele afisat in mesaj")
             .setRequired(false)
             .setMaxLength(120)
         )
         .addStringOption((option) =>
           option
             .setName("url")
-            .setDescription("URL profilo, live o canale")
+            .setDescription("URL profil, live sau canal")
             .setRequired(false)
             .setMaxLength(500)
         )
         .addStringOption(addFeedOption)
         .addStringOption((option) =>
           option
-            .setName("messaggio")
-            .setDescription("Template solo per questa sorgente")
+            .setName("mesaj")
+            .setDescription("Template doar pentru aceasta sursa")
             .setRequired(false)
             .setMaxLength(1500)
         )
         .addRoleOption((option) =>
           option
-            .setName("ruolo_ping")
-            .setDescription("Ruolo da menzionare nelle notifiche")
+            .setName("rol_ping")
+            .setDescription("Rolul mentionat in notificari")
             .setRequired(false)
         )
         .addBooleanOption((option) =>
           option
-            .setName("notifica_subito")
-            .setDescription("Invia anche il contenuto gia live/pubblicato al primo controllo")
+            .setName("notifica_imediat")
+            .setDescription("Trimite si continutul deja live/publicat la prima verificare")
             .setRequired(false)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("modifica")
-        .setDescription("Modifica una sorgente esistente")
+        .setDescription("Modifica o sursa existenta")
         .addIntegerOption((option) =>
           option
             .setName("id")
-            .setDescription("ID sorgente")
+            .setDescription("ID-ul sursei")
             .setRequired(true)
             .setMinValue(1)
         )
@@ -150,67 +150,67 @@ function buildCommands() {
         .addStringOption(addOptionalPlatformOption)
         .addStringOption((option) =>
           option
-            .setName("utente")
-            .setDescription("Nuovo username, handle, channel id o nome sorgente")
+            .setName("utilizator")
+            .setDescription("Noul username, handle, channel id sau nume de sursa")
             .setRequired(false)
             .setMaxLength(120)
         )
         .addChannelOption((option) => addTextChannelOption(option, false))
         .addStringOption((option) =>
           option
-            .setName("nome")
-            .setDescription("Nuovo nome visualizzato")
+            .setName("nume")
+            .setDescription("Noul nume afisat")
             .setRequired(false)
             .setMaxLength(120)
         )
         .addStringOption((option) =>
           option
             .setName("url")
-            .setDescription("Nuovo URL profilo, live o canale")
+            .setDescription("Noul URL profil, live sau canal")
             .setRequired(false)
             .setMaxLength(500)
         )
         .addStringOption(addFeedOption)
         .addStringOption((option) =>
           option
-            .setName("messaggio")
-            .setDescription("Nuovo template solo per questa sorgente")
+            .setName("mesaj")
+            .setDescription("Noul template doar pentru aceasta sursa")
             .setRequired(false)
             .setMaxLength(1500)
         )
         .addRoleOption((option) =>
           option
-            .setName("ruolo_ping")
-            .setDescription("Nuovo ruolo da menzionare")
+            .setName("rol_ping")
+            .setDescription("Noul rol mentionat")
             .setRequired(false)
         )
         .addBooleanOption((option) =>
           option
-            .setName("rimuovi_ping")
-            .setDescription("Rimuove il ruolo ping da questa sorgente")
+            .setName("sterge_ping")
+            .setDescription("Sterge rolul ping din aceasta sursa")
             .setRequired(false)
         )
         .addBooleanOption((option) =>
           option
-            .setName("attivo")
-            .setDescription("Attiva o disattiva il controllo automatico")
+            .setName("activ")
+            .setDescription("Activeaza sau dezactiveaza verificarea automata")
             .setRequired(false)
         )
         .addBooleanOption((option) =>
           option
-            .setName("reset_messaggio")
-            .setDescription("Rimuove il template personalizzato")
+            .setName("reset_mesaj")
+            .setDescription("Sterge template-ul personalizat")
             .setRequired(false)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("rimuovi")
-        .setDescription("Rimuove una sorgente")
+        .setName("sterge")
+        .setDescription("Sterge o sursa")
         .addIntegerOption((option) =>
           option
             .setName("id")
-            .setDescription("ID sorgente")
+            .setDescription("ID-ul sursei")
             .setRequired(true)
             .setMinValue(1)
         )
@@ -218,132 +218,136 @@ function buildCommands() {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("lista")
-        .setDescription("Mostra le sorgenti configurate")
+        .setDescription("Afiseaza sursele configurate")
         .addStringOption(addOptionalTypeOption)
         .addStringOption(addOptionalPlatformOption)
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("test")
-        .setDescription("Mostra o invia una notifica di test")
+        .setDescription("Afiseaza sau trimite o notificare de test")
         .addIntegerOption((option) =>
           option
             .setName("id")
-            .setDescription("ID sorgente")
+            .setDescription("ID-ul sursei")
             .setRequired(true)
             .setMinValue(1)
         )
         .addBooleanOption((option) =>
           option
-            .setName("invia")
-            .setDescription("Invia davvero il test nel canale configurato")
+            .setName("trimite")
+            .setDescription("Trimite testul in canalul configurat")
             .setRequired(false)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("annuncia")
-        .setDescription("Invia una notifica manuale per qualsiasi piattaforma")
+        .setName("anunta")
+        .setDescription("Trimite manual o notificare pentru orice platforma")
         .addIntegerOption((option) =>
           option
             .setName("id")
-            .setDescription("ID sorgente")
+            .setDescription("ID-ul sursei")
             .setRequired(true)
             .setMinValue(1)
         )
         .addStringOption((option) =>
           option
-            .setName("titolo")
-            .setDescription("Titolo da mostrare nella notifica")
+            .setName("titlu")
+            .setDescription("Titlul afisat in notificare")
             .setRequired(false)
             .setMaxLength(250)
         )
         .addStringOption((option) =>
           option
             .setName("url")
-            .setDescription("URL da mostrare nella notifica")
+            .setDescription("URL-ul afisat in notificare")
             .setRequired(false)
             .setMaxLength(500)
         )
     );
 
-  const canale = new SlashCommandBuilder()
-    .setName("canale")
-    .setDescription("Gestisce i canali Discord di default")
+  const canal = new SlashCommandBuilder()
+    .setName("canal")
+    .setDescription("Gestioneaza canalele Discord implicite")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("imposta")
-        .setDescription("Imposta il canale default per un tipo")
+        .setName("seteaza")
+        .setDescription("Seteaza canalul implicit pentru un tip")
         .addStringOption(addTypeOption)
         .addChannelOption((option) => addTextChannelOption(option, true))
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("rimuovi")
-        .setDescription("Rimuove il canale default per un tipo")
+        .setName("sterge")
+        .setDescription("Sterge canalul implicit pentru un tip")
         .addStringOption(addTypeOption)
     )
     .addSubcommand((subcommand) =>
-      subcommand.setName("mostra").setDescription("Mostra i canali default")
+      subcommand.setName("arata").setDescription("Afiseaza canalele implicite")
     );
 
-  const messaggio = new SlashCommandBuilder()
-    .setName("messaggio")
-    .setDescription("Gestisce i template dei messaggi")
+  const mesaj = new SlashCommandBuilder()
+    .setName("mesaj")
+    .setDescription("Gestioneaza template-urile mesajelor")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("imposta")
-        .setDescription("Imposta un template globale")
+        .setName("seteaza")
+        .setDescription("Seteaza un template global")
         .addStringOption(addTypeOption)
         .addStringOption((option) =>
           option
-            .setName("testo")
-            .setDescription("Template con placeholder: {creator}, {platform}, {title}, {url}, {mention}")
+            .setName("text")
+            .setDescription("Template cu placeholder: {creator}, {platform}, {title}, {url}, {mention}")
             .setRequired(true)
             .setMaxLength(1500)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("mostra")
-        .setDescription("Mostra i template attuali")
+        .setName("arata")
+        .setDescription("Afiseaza template-urile actuale")
         .addStringOption(addOptionalTypeOption)
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("reset")
-        .setDescription("Ripristina un template standard")
+        .setDescription("Reseteaza un template standard")
         .addStringOption(addTypeOption)
     );
 
-  const ruoli = new SlashCommandBuilder()
-    .setName("ruoli")
-    .setDescription("Gestisce i ruoli autorizzati ai comandi")
+  const roluri = new SlashCommandBuilder()
+    .setName("roluri")
+    .setDescription("Gestioneaza rolurile autorizate pentru comenzi")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("aggiungi")
-        .setDescription("Autorizza un ruolo")
+        .setName("adauga")
+        .setDescription("Autorizeaza un rol")
         .addRoleOption((option) =>
-          option.setName("ruolo").setDescription("Ruolo autorizzato").setRequired(true)
+          option.setName("rol").setDescription("Rol autorizat").setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("rimuovi")
-        .setDescription("Rimuove un ruolo autorizzato")
+        .setName("sterge")
+        .setDescription("Sterge un rol autorizat")
         .addRoleOption((option) =>
-          option.setName("ruolo").setDescription("Ruolo da rimuovere").setRequired(true)
+          option.setName("rol").setDescription("Rolul care trebuie sters").setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
-      subcommand.setName("lista").setDescription("Mostra i ruoli autorizzati")
+      subcommand.setName("lista").setDescription("Afiseaza rolurile autorizate")
     );
 
-  const stato = new SlashCommandBuilder()
-    .setName("stato")
-    .setDescription("Mostra stato bot e configurazione");
+  const status = new SlashCommandBuilder()
+    .setName("status")
+    .setDescription("Afiseaza statusul botului si configuratia");
 
-  return [streamer, canale, messaggio, ruoli, stato];
+  const help = new SlashCommandBuilder()
+    .setName("help")
+    .setDescription("Afiseaza toate comenzile botului");
+
+  return [streamer, canal, mesaj, roluri, status, help];
 }
 
 function hasAllowedRole(interaction, allowedRoleIds) {
@@ -388,7 +392,7 @@ async function validateSourceInput(input) {
   }
 
   if (input.type !== "video") {
-    return "Tipo sorgente non valido.";
+    return "Tipul sursei nu este valid.";
   }
 
   if (input.feedUrl) return null;
@@ -399,7 +403,7 @@ async function validateSourceInput(input) {
       return null;
     } catch (error) {
       if (process.env.YOUTUBE_API_KEY) return null;
-      return `${error.message} Oppure imposta YOUTUBE_API_KEY su Railway.`;
+      return `${error.message} Sau seteaza YOUTUBE_API_KEY pe Railway.`;
     }
   }
 
@@ -407,7 +411,7 @@ async function validateSourceInput(input) {
     return null;
   }
 
-  return `Per video ${platformLabel(input.platform)} serve il campo feed con un RSS/Atom https consentito.`;
+  return `Pentru video ${platformLabel(input.platform)} trebuie campul feed cu un RSS/Atom https permis.`;
 }
 
 function findSource(store, id) {
@@ -418,7 +422,7 @@ function sourcePreview(store, source) {
   const data = store.snapshot();
   const template = source.customMessage || data.templates[source.type] || DEFAULT_TEMPLATES[source.type];
   const event = {
-    title: "Test notification",
+    title: "Notificare de test",
     url: source.url || defaultPlatformUrl(source.platform, source.username),
     publishedAt: new Date().toISOString(),
     startedAt: new Date().toISOString()
@@ -427,33 +431,33 @@ function sourcePreview(store, source) {
 }
 
 function sourceListText(sources) {
-  if (sources.length === 0) return "Nessuna sorgente configurata.";
+  if (sources.length === 0) return "Nu exista surse configurate.";
   const lines = sources.slice(0, 25).map(describeSource);
   if (sources.length > 25) {
-    lines.push(`... altre ${sources.length - 25} sorgenti non mostrate.`);
+    lines.push(`... inca ${sources.length - 25} surse nu sunt afisate.`);
   }
   return lines.join("\n");
 }
 
 function sourceModeNote(source) {
   if (!source.manualOnly) return "";
-  return "\nQuesta piattaforma live e impostata come manuale: usa /streamer annuncia quando va live.";
+  return "\nAceasta platforma live este setata manual: foloseste /streamer anunta cand intra live.";
 }
 
 async function handleStreamer(interaction, store) {
   const subcommand = interaction.options.getSubcommand();
 
-  if (subcommand === "aggiungi") {
-    const type = interaction.options.getString("tipo", true);
-    const platform = interaction.options.getString("piattaforma", true);
-    const username = interaction.options.getString("utente", true).trim();
-    const channel = interaction.options.getChannel("canale");
-    const displayName = interaction.options.getString("nome")?.trim() || username;
+  if (subcommand === "adauga") {
+    const type = interaction.options.getString("tip", true);
+    const platform = interaction.options.getString("platforma", true);
+    const username = interaction.options.getString("utilizator", true).trim();
+    const channel = interaction.options.getChannel("canal");
+    const displayName = interaction.options.getString("nume")?.trim() || username;
     const url = interaction.options.getString("url")?.trim() || null;
     const feedUrl = interaction.options.getString("feed")?.trim() || null;
-    const customMessage = interaction.options.getString("messaggio")?.trim() || null;
-    const mentionRole = interaction.options.getRole("ruolo_ping");
-    const notifyOnFirstCheck = interaction.options.getBoolean("notifica_subito") === true;
+    const customMessage = interaction.options.getString("mesaj")?.trim() || null;
+    const mentionRole = interaction.options.getRole("rol_ping");
+    const notifyOnFirstCheck = interaction.options.getBoolean("notifica_imediat") === true;
     const defaults = store.snapshot().defaultChannels;
 
     const input = {
@@ -477,7 +481,7 @@ async function handleStreamer(interaction, store) {
 
     if (!input.channelId) {
       await interaction.reply({
-        content: "Scegli un canale oppure imposta prima un canale default con /canale imposta.",
+        content: "Alege un canal sau seteaza mai intai un canal implicit cu /canal seteaza.",
         ephemeral: true
       });
       return;
@@ -491,7 +495,7 @@ async function handleStreamer(interaction, store) {
 
     const source = await store.addSource(input);
     await interaction.reply({
-      content: `Sorgente aggiunta: ${describeSource(source)}${sourceModeNote(source)}`,
+      content: `Sursa adaugata: ${describeSource(source)}${sourceModeNote(source)}`,
       ephemeral: true
     });
     return;
@@ -501,25 +505,25 @@ async function handleStreamer(interaction, store) {
     const id = interaction.options.getInteger("id", true);
     const source = findSource(store, id);
     if (!source) {
-      await interaction.reply({ content: `Sorgente #${id} non trovata.`, ephemeral: true });
+      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, ephemeral: true });
       return;
     }
 
     const patch = {};
-    const cursorFields = ["tipo", "piattaforma", "utente", "feed", "url"];
+    const cursorFields = ["tip", "platforma", "utilizator", "feed", "url"];
 
-    const type = interaction.options.getString("tipo");
-    const platform = interaction.options.getString("piattaforma");
-    const username = interaction.options.getString("utente")?.trim();
-    const channel = interaction.options.getChannel("canale");
-    const displayName = interaction.options.getString("nome")?.trim();
+    const type = interaction.options.getString("tip");
+    const platform = interaction.options.getString("platforma");
+    const username = interaction.options.getString("utilizator")?.trim();
+    const channel = interaction.options.getChannel("canal");
+    const displayName = interaction.options.getString("nume")?.trim();
     const url = interaction.options.getString("url")?.trim();
     const feedUrl = interaction.options.getString("feed")?.trim();
-    const customMessage = interaction.options.getString("messaggio")?.trim();
-    const mentionRole = interaction.options.getRole("ruolo_ping");
-    const removePing = interaction.options.getBoolean("rimuovi_ping");
-    const enabled = interaction.options.getBoolean("attivo");
-    const resetMessage = interaction.options.getBoolean("reset_messaggio");
+    const customMessage = interaction.options.getString("mesaj")?.trim();
+    const mentionRole = interaction.options.getRole("rol_ping");
+    const removePing = interaction.options.getBoolean("sterge_ping");
+    const enabled = interaction.options.getBoolean("activ");
+    const resetMessage = interaction.options.getBoolean("reset_mesaj");
 
     if (type) patch.type = type;
     if (platform) patch.platform = platform;
@@ -554,25 +558,25 @@ async function handleStreamer(interaction, store) {
 
     const updated = await store.updateSource(id, patch);
     await interaction.reply({
-      content: `Sorgente aggiornata: ${describeSource(updated)}${sourceModeNote(updated)}`,
+      content: `Sursa actualizata: ${describeSource(updated)}${sourceModeNote(updated)}`,
       ephemeral: true
     });
     return;
   }
 
-  if (subcommand === "rimuovi") {
+  if (subcommand === "sterge") {
     const id = interaction.options.getInteger("id", true);
     const removed = await store.removeSource(id);
     await interaction.reply({
-      content: removed ? `Sorgente rimossa: ${describeSource(removed)}` : `Sorgente #${id} non trovata.`,
+      content: removed ? `Sursa stearsa: ${describeSource(removed)}` : `Sursa #${id} nu a fost gasita.`,
       ephemeral: true
     });
     return;
   }
 
   if (subcommand === "lista") {
-    const type = interaction.options.getString("tipo");
-    const platform = interaction.options.getString("piattaforma");
+    const type = interaction.options.getString("tip");
+    const platform = interaction.options.getString("platforma");
     const data = store.snapshot();
     const sources = data.sources.filter((source) => {
       if (type && source.type !== type) return false;
@@ -589,60 +593,60 @@ async function handleStreamer(interaction, store) {
 
   if (subcommand === "test") {
     const id = interaction.options.getInteger("id", true);
-    const send = interaction.options.getBoolean("invia") === true;
+    const send = interaction.options.getBoolean("trimite") === true;
     const source = findSource(store, id);
     if (!source) {
-      await interaction.reply({ content: `Sorgente #${id} non trovata.`, ephemeral: true });
+      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, ephemeral: true });
       return;
     }
 
     if (send) {
       await sendTestNotification(interaction.client, store, source);
-      await interaction.reply({ content: "Notifica di test inviata.", ephemeral: true });
+      await interaction.reply({ content: "Notificarea de test a fost trimisa.", ephemeral: true });
       return;
     }
 
     await interaction.reply({
-      content: `Preview:\n${sourcePreview(store, source)}`,
+      content: `Previzualizare:\n${sourcePreview(store, source)}`,
       ephemeral: true
     });
     return;
   }
 
-  if (subcommand === "annuncia") {
+  if (subcommand === "anunta") {
     const id = interaction.options.getInteger("id", true);
     const source = findSource(store, id);
     if (!source) {
-      await interaction.reply({ content: `Sorgente #${id} non trovata.`, ephemeral: true });
+      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, ephemeral: true });
       return;
     }
 
-    const title = interaction.options.getString("titolo")?.trim() || null;
+    const title = interaction.options.getString("titlu")?.trim() || null;
     const url = interaction.options.getString("url")?.trim() || null;
     await sendManualNotification(interaction.client, store, source, { title, url });
-    await interaction.reply({ content: "Notifica manuale inviata.", ephemeral: true });
+    await interaction.reply({ content: "Notificarea manuala a fost trimisa.", ephemeral: true });
   }
 }
 
-async function handleCanale(interaction, store) {
+async function handleCanal(interaction, store) {
   const subcommand = interaction.options.getSubcommand();
 
-  if (subcommand === "imposta") {
-    const type = interaction.options.getString("tipo", true);
-    const channel = interaction.options.getChannel("canale", true);
+  if (subcommand === "seteaza") {
+    const type = interaction.options.getString("tip", true);
+    const channel = interaction.options.getChannel("canal", true);
     const channels = await store.setDefaultChannel(type, channel.id);
     await interaction.reply({
-      content: `Canale default ${type}: <#${channels[type]}>`,
+      content: `Canal implicit ${type}: <#${channels[type]}>`,
       ephemeral: true
     });
     return;
   }
 
-  if (subcommand === "rimuovi") {
-    const type = interaction.options.getString("tipo", true);
+  if (subcommand === "sterge") {
+    const type = interaction.options.getString("tip", true);
     await store.setDefaultChannel(type, null);
     await interaction.reply({
-      content: `Canale default ${type} rimosso.`,
+      content: `Canalul implicit ${type} a fost sters.`,
       ephemeral: true
     });
     return;
@@ -650,38 +654,38 @@ async function handleCanale(interaction, store) {
 
   const channels = store.snapshot().defaultChannels;
   await interaction.reply({
-    content: `Live: ${channels.live ? `<#${channels.live}>` : "non impostato"}\nVideo: ${
-      channels.video ? `<#${channels.video}>` : "non impostato"
+    content: `Live: ${channels.live ? `<#${channels.live}>` : "nesetat"}\nVideo: ${
+      channels.video ? `<#${channels.video}>` : "nesetat"
     }`,
     ephemeral: true
   });
 }
 
-async function handleMessaggio(interaction, store) {
+async function handleMesaj(interaction, store) {
   const subcommand = interaction.options.getSubcommand();
 
-  if (subcommand === "imposta") {
-    const type = interaction.options.getString("tipo", true);
-    const text = interaction.options.getString("testo", true);
+  if (subcommand === "seteaza") {
+    const type = interaction.options.getString("tip", true);
+    const text = interaction.options.getString("text", true);
     await store.setTemplate(type, text);
     await interaction.reply({
-      content: `Template ${type} aggiornato.\nPlaceholder: {mention}, {creator}, {username}, {platform}, {type}, {title}, {url}, {channel}, {publishedAt}, {startedAt}`,
+      content: `Template-ul ${type} a fost actualizat.\nPlaceholder: {mention}, {creator}, {username}, {platform}, {type}, {title}, {url}, {channel}, {publishedAt}, {startedAt}`,
       ephemeral: true
     });
     return;
   }
 
   if (subcommand === "reset") {
-    const type = interaction.options.getString("tipo", true);
+    const type = interaction.options.getString("tip", true);
     const template = await store.resetTemplate(type);
     await interaction.reply({
-      content: `Template ${type} ripristinato:\n${template}`,
+      content: `Template-ul ${type} a fost resetat:\n${template}`,
       ephemeral: true
     });
     return;
   }
 
-  const type = interaction.options.getString("tipo");
+  const type = interaction.options.getString("tip");
   const templates = store.snapshot().templates;
   const lines = type
     ? [`${type}: ${templates[type]}`]
@@ -693,24 +697,24 @@ async function handleMessaggio(interaction, store) {
   });
 }
 
-async function handleRuoli(interaction, store) {
+async function handleRoluri(interaction, store) {
   const subcommand = interaction.options.getSubcommand();
 
-  if (subcommand === "aggiungi") {
-    const role = interaction.options.getRole("ruolo", true);
+  if (subcommand === "adauga") {
+    const role = interaction.options.getRole("rol", true);
     const roles = await store.addAllowedRole(role.id);
     await interaction.reply({
-      content: `Ruolo autorizzato: <@&${role.id}>\nTotale ruoli: ${roles.length}`,
+      content: `Rol autorizat: <@&${role.id}>\nTotal roluri: ${roles.length}`,
       ephemeral: true
     });
     return;
   }
 
-  if (subcommand === "rimuovi") {
-    const role = interaction.options.getRole("ruolo", true);
+  if (subcommand === "sterge") {
+    const role = interaction.options.getRole("rol", true);
     const roles = await store.removeAllowedRole(role.id);
     await interaction.reply({
-      content: `Ruolo rimosso: <@&${role.id}>\nTotale ruoli: ${roles.length}`,
+      content: `Rol sters: <@&${role.id}>\nTotal roluri: ${roles.length}`,
       ephemeral: true
     });
     return;
@@ -718,12 +722,12 @@ async function handleRuoli(interaction, store) {
 
   const roles = store.snapshot().allowedRoleIds;
   await interaction.reply({
-    content: roles.length ? roles.map((roleId) => `<@&${roleId}>`).join("\n") : "Nessun ruolo configurato.",
+    content: roles.length ? roles.map((roleId) => `<@&${roleId}>`).join("\n") : "Nu exista roluri configurate.",
     ephemeral: true
   });
 }
 
-async function handleStato(interaction, store) {
+async function handleStatus(interaction, store) {
   const data = store.snapshot();
   const enabled = data.sources.filter((source) => source.enabled && !source.manualOnly).length;
   const manual = data.sources.filter((source) => source.manualOnly).length;
@@ -733,14 +737,40 @@ async function handleStato(interaction, store) {
 
   await interaction.reply({
     content: [
-      "Bot Streamers CLT online.",
+      "Bot Streamers CLT este online.",
       `Server: ${data.guildId}`,
-      `Sorgenti: ${enabled}/${total} automatiche, ${manual} manuali (${live} live, ${video} video)`,
-      `Intervallo controlli: ${data.settings.checkIntervalSeconds}s`,
-      `Ruoli autorizzati: ${data.allowedRoleIds.length}`,
-      `Canale live: ${data.defaultChannels.live ? `<#${data.defaultChannels.live}>` : "non impostato"}`,
-      `Canale video: ${data.defaultChannels.video ? `<#${data.defaultChannels.video}>` : "non impostato"}`,
-      `Piattaforme: ${PLATFORMS.map((item) => platformLabel(item.value)).join(", ")}`
+      `Surse: ${enabled}/${total} automate, ${manual} manuale (${live} live, ${video} video)`,
+      `Interval verificari: ${data.settings.checkIntervalSeconds}s`,
+      `Roluri autorizate: ${data.allowedRoleIds.length}`,
+      `Canal live: ${data.defaultChannels.live ? `<#${data.defaultChannels.live}>` : "nesetat"}`,
+      `Canal video: ${data.defaultChannels.video ? `<#${data.defaultChannels.video}>` : "nesetat"}`,
+      `Platforme: ${PLATFORMS.map((item) => platformLabel(item.value)).join(", ")}`
+    ].join("\n"),
+    ephemeral: true
+  });
+}
+
+async function handleHelp(interaction) {
+  await interaction.reply({
+    content: [
+      "Comenzi Bot Streamers CLT:",
+      "/help - Afiseaza toate comenzile botului.",
+      "/status - Afiseaza statusul botului si configuratia.",
+      "/canal seteaza - Seteaza canalul implicit pentru live sau video.",
+      "/canal arata - Afiseaza canalele implicite.",
+      "/canal sterge - Sterge canalul implicit pentru un tip.",
+      "/streamer adauga - Adauga o sursa live/video.",
+      "/streamer modifica - Modifica o sursa existenta.",
+      "/streamer sterge - Sterge o sursa.",
+      "/streamer lista - Afiseaza sursele configurate.",
+      "/streamer test - Afiseaza sau trimite o notificare de test.",
+      "/streamer anunta - Trimite manual o notificare pentru orice platforma.",
+      "/mesaj seteaza - Schimba template-ul global pentru live sau video.",
+      "/mesaj arata - Afiseaza template-urile actuale.",
+      "/mesaj reset - Reseteaza template-ul standard.",
+      "/roluri adauga - Autorizeaza un rol pentru comenzi.",
+      "/roluri sterge - Sterge un rol autorizat.",
+      "/roluri lista - Afiseaza rolurile autorizate."
     ].join("\n"),
     ephemeral: true
   });
@@ -756,27 +786,32 @@ async function handleInteraction(interaction, store) {
       return;
     }
 
-    if (interaction.commandName === "canale") {
-      await handleCanale(interaction, store);
+    if (interaction.commandName === "canal") {
+      await handleCanal(interaction, store);
       return;
     }
 
-    if (interaction.commandName === "messaggio") {
-      await handleMessaggio(interaction, store);
+    if (interaction.commandName === "mesaj") {
+      await handleMesaj(interaction, store);
       return;
     }
 
-    if (interaction.commandName === "ruoli") {
-      await handleRuoli(interaction, store);
+    if (interaction.commandName === "roluri") {
+      await handleRoluri(interaction, store);
       return;
     }
 
-    if (interaction.commandName === "stato") {
-      await handleStato(interaction, store);
+    if (interaction.commandName === "status") {
+      await handleStatus(interaction, store);
+      return;
+    }
+
+    if (interaction.commandName === "help") {
+      await handleHelp(interaction);
     }
   } catch (error) {
     const payload = {
-      content: `Errore: ${error.message}`,
+      content: `Eroare: ${error.message}`,
       ephemeral: true
     };
 

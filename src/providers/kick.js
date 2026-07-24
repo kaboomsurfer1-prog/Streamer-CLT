@@ -5,7 +5,7 @@ function kickUrl(username) {
 async function getKickLive(source) {
   const username = String(source.username || "").replace(/^@/, "");
   if (!username) {
-    throw new Error("Username Kick mancante.");
+    throw new Error("Username Kick lipsa.");
   }
 
   const response = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(username)}`, {
@@ -17,7 +17,7 @@ async function getKickLive(source) {
 
   if (response.status === 404) return null;
   if (!response.ok) {
-    throw new Error(`Errore Kick: HTTP ${response.status}`);
+    throw new Error(`Eroare Kick: HTTP ${response.status}`);
   }
 
   const payload = await response.json();

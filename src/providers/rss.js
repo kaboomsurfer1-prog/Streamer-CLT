@@ -27,7 +27,7 @@ function buildFeedUrl(source) {
   if (source.platform === "youtube") {
     const channelId = extractYouTubeChannelId(source.username) || extractYouTubeChannelId(source.url);
     if (!channelId) {
-      throw new Error("Per video YouTube senza API key serve un channel id UC... oppure un feed RSS.");
+      throw new Error("Pentru video YouTube fara API key trebuie un channel id UC... sau un feed RSS.");
     }
     return `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`;
   }
@@ -36,7 +36,7 @@ function buildFeedUrl(source) {
     return `${getRssHubBaseUrl()}/tiktok/user/${encodeURIComponent(cleanUsername(source.username))}`;
   }
 
-  throw new Error(`Per i video ${source.platform} serve un feed RSS valido.`);
+  throw new Error(`Pentru video ${source.platform} trebuie un feed RSS valid.`);
 }
 
 function itemId(item) {
@@ -63,7 +63,7 @@ async function getLatestRssItem(source) {
   return {
     id: itemId(item),
     type: "video",
-    title: item.title || feed.title || "Nuovo contenuto",
+    title: item.title || feed.title || "Continut nou",
     url: item.link || source.url || feed.link || "",
     publishedAt: item.isoDate || item.pubDate || null,
     raw: {

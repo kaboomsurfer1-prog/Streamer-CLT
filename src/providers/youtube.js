@@ -3,7 +3,7 @@ const channelCache = new Map();
 function requireYouTubeApiKey() {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
-    throw new Error("YOUTUBE_API_KEY e obbligatoria per YouTube Live o handle YouTube.");
+    throw new Error("YOUTUBE_API_KEY este obligatorie pentru YouTube Live sau handle YouTube.");
   }
   return apiKey;
 }
@@ -42,7 +42,7 @@ async function youtubeGet(path, params) {
   });
 
   if (!response.ok) {
-    throw new Error(`Errore YouTube API ${path}: HTTP ${response.status}`);
+    throw new Error(`Eroare YouTube API ${path}: HTTP ${response.status}`);
   }
 
   return response.json();
@@ -76,7 +76,7 @@ async function resolveYouTubeChannelId(source) {
     }
   }
 
-  throw new Error("Canale YouTube non trovato. Usa un channel id UC... oppure un handle valido.");
+  throw new Error("Canal YouTube negasit. Foloseste un channel id UC... sau un handle valid.");
 }
 
 async function getYouTubeLive(source) {
@@ -120,7 +120,7 @@ async function getLatestYouTubeVideo(source) {
   return {
     id: `youtube-video:${videoId}`,
     type: "video",
-    title: item.snippet?.title || "Nuovo video YouTube",
+    title: item.snippet?.title || "Video YouTube nou",
     url: `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
     publishedAt: item.snippet?.publishedAt || null,
     raw: item

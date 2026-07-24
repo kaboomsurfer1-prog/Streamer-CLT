@@ -48,13 +48,13 @@ async function getLatestEvent(source) {
     return getLatestVideoEvent(source);
   }
 
-  throw new Error(`Sorgente non supportata: ${source.type}/${source.platform}`);
+  throw new Error(`Sursa nesuportata: ${source.type}/${source.platform}`);
 }
 
 async function fetchTextChannel(client, channelId) {
   const channel = await client.channels.fetch(channelId);
   if (!channel || !channel.isTextBased()) {
-    throw new Error(`Canale Discord non valido: ${channelId}`);
+    throw new Error(`Canal Discord invalid: ${channelId}`);
   }
 
   if (
@@ -63,7 +63,7 @@ async function fetchTextChannel(client, channelId) {
     channel.type !== ChannelType.PublicThread &&
     channel.type !== ChannelType.PrivateThread
   ) {
-    throw new Error(`Tipo canale non supportato: ${channelId}`);
+    throw new Error(`Tip de canal nesuportat: ${channelId}`);
   }
 
   return channel;
@@ -72,7 +72,7 @@ async function fetchTextChannel(client, channelId) {
 async function sendNotification(client, data, source, event) {
   const channelId = getTargetChannelId(data, source);
   if (!channelId) {
-    throw new Error(`Nessun canale configurato per la sorgente #${source.id}.`);
+    throw new Error(`Nu exista canal configurat pentru sursa #${source.id}.`);
   }
 
   const channel = await fetchTextChannel(client, channelId);
@@ -136,7 +136,7 @@ async function checkSource(client, store, source) {
       source,
       null,
       false,
-      `Sorgente non supportata: ${source.type}/${source.platform}`
+      `Sursa nesuportata: ${source.type}/${source.platform}`
     );
     return;
   }
@@ -148,12 +148,12 @@ async function checkSource(client, store, source) {
 
     if (notify) {
       await sendNotification(client, data, source, event);
-      logger.info(`Notifica inviata per sorgente #${source.id}`);
+      logger.info(`Notificare trimisa pentru sursa #${source.id}`);
     }
 
     await updateSourceAfterCheck(store, source, event, notify);
   } catch (error) {
-    logger.warn(`Controllo fallito per sorgente #${source.id}: ${error.message}`);
+    logger.warn(`Verificare esuata pentru sursa #${source.id}: ${error.message}`);
     await updateSourceAfterCheck(store, source, null, false, error.message);
   }
 }
@@ -182,7 +182,7 @@ function startNotificationLoop(client, store) {
   const interval = Math.max(60, Number(intervalSeconds) || 120) * 1000;
   setInterval(tick, interval);
   setTimeout(tick, 5000);
-  logger.info(`Watcher notifiche avviato ogni ${interval / 1000}s`);
+  logger.info(`Watcher notificari pornit la fiecare ${interval / 1000}s`);
 }
 
 async function sendTestNotification(client, store, source) {
@@ -190,7 +190,7 @@ async function sendTestNotification(client, store, source) {
   const event = {
     id: `test:${Date.now()}`,
     type: source.type,
-    title: "Test notification",
+    title: "Notificare de test",
     url: source.url || defaultPlatformUrl(source.platform, source.username),
     publishedAt: nowIso(),
     startedAt: nowIso()
@@ -203,7 +203,7 @@ async function sendManualNotification(client, store, source, input = {}) {
   const event = {
     id: `manual:${Date.now()}`,
     type: source.type,
-    title: input.title || (source.type === "live" ? "Live stream" : "Nuovo contenuto"),
+    title: input.title || (source.type === "live" ? "Live stream" : "Continut nou"),
     url: input.url || source.url || defaultPlatformUrl(source.platform, source.username),
     publishedAt: nowIso(),
     startedAt: nowIso()

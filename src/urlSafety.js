@@ -84,25 +84,25 @@ async function assertSafeExternalUrl(value) {
   try {
     url = new URL(value);
   } catch {
-    throw new Error("URL non valido.");
+    throw new Error("URL invalid.");
   }
 
   if (url.protocol !== "https:") {
-    throw new Error("Sono permessi solo URL https.");
+    throw new Error("Sunt permise doar URL-uri https.");
   }
 
   if (!isAllowedHostname(url.hostname)) {
-    throw new Error(`Dominio non consentito per feed: ${url.hostname}`);
+    throw new Error(`Domeniu nepermis pentru feed: ${url.hostname}`);
   }
 
   const literalIpVersion = net.isIP(url.hostname);
   if (literalIpVersion && isPrivateIp(url.hostname)) {
-    throw new Error("URL verso IP privati o locali non permesso.");
+    throw new Error("URL catre IP-uri private sau locale nepermis.");
   }
 
   const records = await dns.lookup(url.hostname, { all: true });
   if (records.some((record) => isPrivateIp(record.address))) {
-    throw new Error("Il dominio risolve a un IP privato o locale, quindi non e permesso.");
+    throw new Error("Domeniul rezolva catre un IP privat sau local, deci nu este permis.");
   }
 
   return url.toString();
@@ -110,7 +110,7 @@ async function assertSafeExternalUrl(value) {
 
 async function fetchSafeText(value, options = {}, redirects = 0) {
   if (redirects > 3) {
-    throw new Error("Troppi redirect durante il download del feed.");
+    throw new Error("Prea multe redirect-uri la descarcarea feed-ului.");
   }
 
   const safeUrl = await assertSafeExternalUrl(value);
@@ -122,14 +122,14 @@ async function fetchSafeText(value, options = {}, redirects = 0) {
   if ([301, 302, 303, 307, 308].includes(response.status)) {
     const location = response.headers.get("location");
     if (!location) {
-      throw new Error("Redirect senza destinazione.");
+      throw new Error("Redirect fara destinatie.");
     }
     const nextUrl = new URL(location, safeUrl).toString();
     return fetchSafeText(nextUrl, options, redirects + 1);
   }
 
   if (!response.ok) {
-    throw new Error(`Errore download feed: HTTP ${response.status}`);
+    throw new Error(`Eroare descarcare feed: HTTP ${response.status}`);
   }
 
   return response.text();
