@@ -556,6 +556,18 @@ function renderDashboardPage() {
       <div id="notice" class="notice" hidden></div>
       <div id="sourceList" class="source-list"></div>
     </section>
+
+    <section class="list-panel console-panel">
+      <div class="list-head">
+        <h2>Live console</h2>
+        <div class="console-actions">
+          <span id="consoleStatus" class="pill state-auto">Live</span>
+          <button id="consolePause" type="button" class="secondary small">Pauza</button>
+          <button id="consoleClear" type="button" class="secondary small">Curata</button>
+        </div>
+      </div>
+      <div id="logView" class="log-view"></div>
+    </section>
   </main>
 
   <script>${JS}</script>
@@ -620,6 +632,12 @@ async function handleRequest(request, response, store, client) {
 
   if (request.method === "GET" && url.pathname === "/api/state") {
     sendJson(response, 200, await buildState(store, client));
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/logs") {
+    const after = Number(url.searchParams.get("after")) || 0;
+    sendJson(response, 200, { ok: true, logs: logger.getLogs(after) });
     return;
   }
 
@@ -737,6 +755,27 @@ a { color: var(--accent-dark); }
 }
 .tool-panel { padding: 18px; align-self: start; }
 .list-panel { padding: 18px; min-width: 0; }
+.console-panel { grid-column: 1 / -1; }
+.console-actions { display: flex; align-items: center; gap: 8px; }
+.log-view {
+  background: #0d1512;
+  color: #d7e3de;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  height: 320px;
+  overflow-y: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.log-line { padding: 1px 0; }
+.log-info { color: #b9c7c1; }
+.log-warn { color: #f2c15b; }
+.log-error { color: #ff8377; }
+.log-empty { color: #6d7d77; }
 .panel-head, .list-head {
   display: flex;
   align-items: center;
@@ -1157,6 +1196,58 @@ const JS = `
   tagInput.addEventListener("change", updateConditionalFields);
   document.getElementById("refreshButton").addEventListener("click", loadState);
   document.getElementById("resetFormButton").addEventListener("click", resetForm);
+
+  const logView = document.getElementById("logView");
+  const consolePause = document.getElementById("consolePause");
+  const consoleClear = document.getElementById("consoleClear");
+  const consoleStatus = document.getElementById("consoleStatus");
+  let lastLogSeq = 0;
+  let consolePaused = false;
+  const MAX_LOG_LINES = 600;
+
+  function appendLogs(logs) {
+    if (!logs || !logs.length) return;
+    const atBottom = logView.scrollHeight - logView.scrollTop - logView.clientHeight < 60;
+    const empty = logView.querySelector(".log-empty");
+    if (empty) empty.remove();
+    logs.forEach((entry) => {
+      if (entry.seq > lastLogSeq) lastLogSeq = entry.seq;
+      const line = document.createElement("div");
+      line.className = "log-line log-" + String(entry.level || "info").toLowerCase();
+      line.textContent = "[" + entry.ts + "] " + entry.level + " " + entry.message;
+      logView.appendChild(line);
+    });
+    while (logView.childElementCount > MAX_LOG_LINES) {
+      logView.removeChild(logView.firstChild);
+    }
+    if (atBottom) logView.scrollTop = logView.scrollHeight;
+  }
+
+  async function pollLogs() {
+    if (consolePaused) return;
+    try {
+      const payload = await api("/api/logs?after=" + lastLogSeq);
+      appendLogs(payload.logs);
+    } catch (error) {
+      /* pastram polling-ul chiar daca o cerere esueaza */
+    }
+  }
+
+  if (logView) {
+    logView.innerHTML = '<div class="log-empty">Astept loguri de la bot...</div>';
+    consolePause.addEventListener("click", () => {
+      consolePaused = !consolePaused;
+      consolePause.textContent = consolePaused ? "Reia" : "Pauza";
+      consoleStatus.textContent = consolePaused ? "Pauza" : "Live";
+      consoleStatus.classList.toggle("state-auto", !consolePaused);
+      consoleStatus.classList.toggle("state-off", consolePaused);
+    });
+    consoleClear.addEventListener("click", () => {
+      logView.innerHTML = "";
+    });
+    pollLogs();
+    setInterval(pollLogs, 3000);
+  }
 
   loadState().catch((error) => showNotice(error.message, true));
 })();
