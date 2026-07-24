@@ -2,8 +2,8 @@ let cachedToken = null;
 let tokenExpiresAt = 0;
 
 function requireTwitchCredentials() {
-  const clientId = process.env.TWITCH_CLIENT_ID;
-  const clientSecret = process.env.TWITCH_CLIENT_SECRET;
+  const clientId = (process.env.TWITCH_CLIENT_ID || "").trim();
+  const clientSecret = (process.env.TWITCH_CLIENT_SECRET || "").trim();
 
   if (!clientId || !clientSecret) {
     throw new Error("TWITCH_CLIENT_ID si TWITCH_CLIENT_SECRET sunt obligatorii pentru Twitch.");
@@ -31,6 +31,16 @@ async function getAccessToken() {
   });
 
   if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error(
+        "Eroare token Twitch: HTTP 403 (client secret invalid). Regenereaza si actualizeaza TWITCH_CLIENT_SECRET pe Railway."
+      );
+    }
+    if (response.status === 400) {
+      throw new Error(
+        "Eroare token Twitch: HTTP 400 (client id invalid). Verifica TWITCH_CLIENT_ID pe Railway."
+      );
+    }
     throw new Error(`Eroare token Twitch: HTTP ${response.status}`);
   }
 

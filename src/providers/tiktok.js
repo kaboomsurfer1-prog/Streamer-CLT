@@ -1,17 +1,79 @@
-function requireTikToolsApiKey() {
-  const apiKey = process.env.TIKTOOL_API_KEY || process.env.TIKTOOLS_API_KEY;
-  if (!apiKey) {
-    throw new Error("TIKTOOL_API_KEY este obligatorie pentru live TikTok automat.");
-  }
-  return apiKey;
-}
-
 function cleanTikTokUsername(value) {
   return String(value || "").trim().replace(/^@/, "");
 }
 
 function tiktokUrl(username) {
   return `https://www.tiktok.com/@${encodeURIComponent(cleanTikTokUsername(username))}/live`;
+}
+
+const BROWSER_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  Accept: "application/json, text/plain, */*",
+  "Accept-Language": "en-US,en;q=0.9",
+  Referer: "https://www.tiktok.com/"
+};
+
+// Metoda gratuita (fara cheie): endpointul public webcast info_by_user.
+// Live inseamna status_code === 0 si data.status === 2 (acelasi criteriu folosit
+// de bibliotecile TikTokLive). Orice eroare de transport devine "reincerc",
+// ca sa nu marcam live fals cand TikTok blocheaza cererea de pe server.
+async function getTikTokLiveFree(source) {
+  const username = cleanTikTokUsername(source.username);
+  if (!username) {
+    throw new Error("Username TikTok lipsa.");
+  }
+
+  const url = `https://webcast.tiktok.com/webcast/room/info_by_user/?aid=1988&unique_id=${encodeURIComponent(
+    username
+  )}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: BROWSER_HEADERS,
+    signal: AbortSignal.timeout(15000)
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `TikTok Live (fara API): HTTP ${response.status}. TikTok poate limita cererile de pe server; reincerc data urmatoare.`
+    );
+  }
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("TikTok Live (fara API): raspuns necitibil (posibil blocat). Reincerc data urmatoare.");
+  }
+
+  const data = (payload && payload.data) || {};
+
+  if (payload.status_code === 0 && data.status === 2) {
+    const roomId = data.id_str || (data.id != null ? String(data.id) : username);
+    const startedAt = data.create_time
+      ? new Date(Number(data.create_time) * 1000).toISOString()
+      : null;
+
+    return {
+      id: `tiktok-live:${roomId}`,
+      type: "live",
+      title: data.title || (data.owner && data.owner.nickname) || source.displayName || "TikTok Live",
+      url: source.url || tiktokUrl(username),
+      startedAt,
+      raw: { status: data.status, roomId }
+    };
+  }
+
+  return null;
+}
+
+function requireTikToolsApiKey() {
+  const apiKey = (process.env.TIKTOOL_API_KEY || process.env.TIKTOOLS_API_KEY || "").trim();
+  if (!apiKey) {
+    throw new Error("TIKTOOL_API_KEY este obligatorie pentru live TikTok prin tik.tools.");
+  }
+  return apiKey;
 }
 
 function pickLiveRow(payload) {
@@ -63,7 +125,8 @@ async function parseTikToolsResponse(response) {
   return payload;
 }
 
-async function getTikTokLive(source) {
+// Metoda cu cheie tik.tools (folosita cand TIKTOOL_API_KEY este setata).
+async function getTikTokLiveViaTikTools(source) {
   const apiKey = requireTikToolsApiKey();
   const username = cleanTikTokUsername(source.username);
   if (!username) {
@@ -99,6 +162,14 @@ async function getTikTokLive(source) {
     startedAt: row.start_time || row.started_at || row.create_time || null,
     raw: row
   };
+}
+
+async function getTikTokLive(source) {
+  const apiKey = (process.env.TIKTOOL_API_KEY || process.env.TIKTOOLS_API_KEY || "").trim();
+  if (apiKey) {
+    return getTikTokLiveViaTikTools(source);
+  }
+  return getTikTokLiveFree(source);
 }
 
 module.exports = {

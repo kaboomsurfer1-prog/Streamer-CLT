@@ -546,9 +546,8 @@ async function validateSourceInput(input) {
     if (input.platform === "youtube" && !process.env.YOUTUBE_API_KEY) {
       return "Pentru live YouTube automat trebuie YOUTUBE_API_KEY pe Railway.";
     }
-    if (input.platform === "tiktok" && !process.env.TIKTOOL_API_KEY && !process.env.TIKTOOLS_API_KEY) {
-      return "Pentru live TikTok automat trebuie TIKTOOL_API_KEY pe Railway.";
-    }
+    // TikTok live functioneaza si fara cheie (metoda gratuita webcast). Cu TIKTOOL_API_KEY
+    // setata se foloseste tik.tools, mai fiabil. Nu blocam adaugarea daca lipseste cheia.
     return null;
   }
 
