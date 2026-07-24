@@ -1,0 +1,20 @@
+{
+  "name": "bot-streamers-clt",
+  "version": "1.0.0",
+  "description": "Discord bot for CLT streamer and video notifications.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "check": "node --check src/index.js && node --check src/commands.js && node --check src/config.js && node --check src/health.js && node --check src/logger.js && node --check src/messages.js && node --check src/notifications.js && node --check src/storage.js && node --check src/providers/rss.js && node --check src/providers/twitch.js && node --check src/providers/youtube.js && node --check src/providers/kick.js && node --check src/urlSafety.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "rss-parser": "^3.13.0"
+  }
+}
