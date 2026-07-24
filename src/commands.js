@@ -33,6 +33,8 @@ const PLATFORMS = [
 ];
 
 const LIVE_NATIVE_PLATFORMS = new Set(["twitch", "youtube", "kick"]);
+const LIVE_PLATFORMS = PLATFORMS.filter((platform) => platform.value !== "rss");
+const VIDEO_PLATFORMS = PLATFORMS;
 
 function addTypeOption(option) {
   return option
@@ -66,6 +68,22 @@ function addOptionalPlatformOption(option) {
     .addChoices(...PLATFORMS);
 }
 
+function addLivePlatformOption(option) {
+  return option
+    .setName("platforma")
+    .setDescription("Platforma live")
+    .setRequired(true)
+    .addChoices(...LIVE_PLATFORMS);
+}
+
+function addVideoPlatformOption(option) {
+  return option
+    .setName("platforma")
+    .setDescription("Platforma video")
+    .setRequired(true)
+    .addChoices(...VIDEO_PLATFORMS);
+}
+
 function addTextChannelOption(option, required = true) {
   return option
     .setName("canal")
@@ -83,6 +101,98 @@ function addFeedOption(option) {
 }
 
 function buildCommands() {
+  const live = new SlashCommandBuilder()
+    .setName("live")
+    .setDescription("Adauga o sursa live si alege canalul de notificari")
+    .addStringOption(addLivePlatformOption)
+    .addStringOption((option) =>
+      option
+        .setName("utilizator")
+        .setDescription("Username, handle sau channel id")
+        .setRequired(true)
+        .setMaxLength(120)
+    )
+    .addChannelOption((option) => addTextChannelOption(option, true))
+    .addStringOption((option) =>
+      option
+        .setName("nume")
+        .setDescription("Numele afisat in mesaj")
+        .setRequired(false)
+        .setMaxLength(120)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("url")
+        .setDescription("URL profil, live sau canal")
+        .setRequired(false)
+        .setMaxLength(500)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("mesaj")
+        .setDescription("Template doar pentru aceasta sursa live")
+        .setRequired(false)
+        .setMaxLength(1500)
+    )
+    .addRoleOption((option) =>
+      option
+        .setName("rol_ping")
+        .setDescription("Rolul mentionat in notificari")
+        .setRequired(false)
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("notifica_imediat")
+        .setDescription("Trimite si live-ul deja pornit la prima verificare")
+        .setRequired(false)
+    );
+
+  const video = new SlashCommandBuilder()
+    .setName("video")
+    .setDescription("Adauga o sursa video si alege canalul de notificari")
+    .addStringOption(addVideoPlatformOption)
+    .addStringOption((option) =>
+      option
+        .setName("utilizator")
+        .setDescription("Username, handle, channel id YouTube sau numele sursei")
+        .setRequired(true)
+        .setMaxLength(120)
+    )
+    .addChannelOption((option) => addTextChannelOption(option, true))
+    .addStringOption((option) =>
+      option
+        .setName("nume")
+        .setDescription("Numele afisat in mesaj")
+        .setRequired(false)
+        .setMaxLength(120)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("url")
+        .setDescription("URL profil sau canal")
+        .setRequired(false)
+        .setMaxLength(500)
+    )
+    .addStringOption(addFeedOption)
+    .addStringOption((option) =>
+      option
+        .setName("mesaj")
+        .setDescription("Template doar pentru aceasta sursa video")
+        .setRequired(false)
+        .setMaxLength(1500)
+    )
+    .addRoleOption((option) =>
+      option
+        .setName("rol_ping")
+        .setDescription("Rolul mentionat in notificari")
+        .setRequired(false)
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("notifica_imediat")
+        .setDescription("Trimite si ultimul video gasit la prima verificare")
+        .setRequired(false)
+    );
   const streamer = new SlashCommandBuilder()
     .setName("streamer")
     .setDescription("Gestioneaza streamerii si sursele video")
@@ -347,7 +457,7 @@ function buildCommands() {
     .setName("help")
     .setDescription("Afiseaza toate comenzile botului");
 
-  return [streamer, canal, mesaj, roluri, status, help];
+  return [live, video, streamer, canal, mesaj, roluri, status, help];
 }
 
 function hasAllowedRole(interaction, allowedRoleIds) {
@@ -442,6 +552,49 @@ function sourceListText(sources) {
 function sourceModeNote(source) {
   if (!source.manualOnly) return "";
   return "\nAceasta platforma live este setata manual: foloseste /streamer anunta cand intra live.";
+}
+
+async function addSourceFromDirectCommand(interaction, store, type) {
+  const platform = interaction.options.getString("platforma", true);
+  const username = interaction.options.getString("utilizator", true).trim();
+  const channel = interaction.options.getChannel("canal", true);
+  const displayName = interaction.options.getString("nume")?.trim() || username;
+  const url = interaction.options.getString("url")?.trim() || null;
+  const feedUrl = type === "video" ? interaction.options.getString("feed")?.trim() || null : null;
+  const customMessage = interaction.options.getString("mesaj")?.trim() || null;
+  const mentionRole = interaction.options.getRole("rol_ping");
+  const notifyOnFirstCheck = interaction.options.getBoolean("notifica_imediat") === true;
+
+  const input = {
+    type,
+    platform,
+    username,
+    displayName,
+    channelId: channel.id,
+    mentionRoleId: mentionRole?.id || null,
+    url,
+    feedUrl,
+    customMessage,
+    enabled: true,
+    manualOnly: false,
+    cursorReady: false,
+    notifyOnFirstCheck
+  };
+
+  input.manualOnly = isManualOnlySource(input);
+  if (input.manualOnly) input.enabled = false;
+
+  const validationError = await validateSourceInput(input);
+  if (validationError) {
+    await interaction.reply({ content: validationError, ephemeral: true });
+    return;
+  }
+
+  const source = await store.addSource(input);
+  await interaction.reply({
+    content: `Sursa ${type} adaugata: ${describeSource(source)}${sourceModeNote(source)}`,
+    ephemeral: true
+  });
 }
 
 async function handleStreamer(interaction, store) {
@@ -755,6 +908,8 @@ async function handleHelp(interaction) {
     content: [
       "Comenzi Bot Streamers CLT:",
       "/help - Afiseaza toate comenzile botului.",
+      "/live - Adauga o sursa live si selecteaza canalul de notificari.",
+      "/video - Adauga o sursa video si selecteaza canalul de notificari.",
       "/status - Afiseaza statusul botului si configuratia.",
       "/canal seteaza - Seteaza canalul implicit pentru live sau video.",
       "/canal arata - Afiseaza canalele implicite.",
@@ -781,6 +936,16 @@ async function handleInteraction(interaction, store) {
   if (!(await ensureAuthorized(interaction, store))) return;
 
   try {
+    if (interaction.commandName === "live") {
+      await addSourceFromDirectCommand(interaction, store, "live");
+      return;
+    }
+
+    if (interaction.commandName === "video") {
+      await addSourceFromDirectCommand(interaction, store, "video");
+      return;
+    }
+
     if (interaction.commandName === "streamer") {
       await handleStreamer(interaction, store);
       return;
