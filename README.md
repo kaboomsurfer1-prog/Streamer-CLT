@@ -1,67 +1,69 @@
 # Bot Streamers CLT
 
-Bot Discord per il server `1505903653079351357`, pensato per notificare live e nuovi video senza modificare il codice.
+Bot Discord pentru serverul `1505903653079351357`, facut pentru notificari live si video fara sa modifici codul.
 
-## Funzioni
+## Functii
 
-- Comandi slash protetti da ruoli autorizzati.
-- Ruoli autorizzati iniziali:
+- Comenzi slash in romana, protejate de roluri autorizate.
+- Comanda `/help` cu lista comenzilor si descrierea lor.
+- Comenzi separate pentru adaugare: `/live` pentru live si `/video` pentru video, ambele cu selectie obligatorie de canal.
+- Roluri autorizate initial:
   - `1505905849774641243`
   - `1519377368354132110`
   - `1505906085901504522`
-- Configurazione persistente in JSON.
-- Canali default separati per live e video.
-- Sorgenti modificabili da Discord: aggiungi, modifica, rimuovi, lista, test, annuncia.
-- Template messaggi globali o personalizzati per singola sorgente.
-- Endpoint `/health` per Railway se e' presente `PORT`.
+- Configuratie persistenta in JSON.
+- Canale implicite separate pentru live si video.
+- Surse modificabile din Discord: adauga, modifica, sterge, lista, test, anunta.
+- Template-uri globale sau personalizate pentru fiecare sursa.
+- Endpoint `/health` pentru Railway daca exista `PORT`.
 
-## Piattaforme
+## Platforme
 
-Live automatiche native:
+Live automat native:
 
-- Twitch, tramite Twitch API.
-- YouTube Live, tramite YouTube Data API.
-- Kick, tramite endpoint pubblico Kick.
+- Twitch, prin Twitch API.
+- YouTube Live, prin YouTube Data API.
+- Kick, prin endpoint public Kick.
 
-Video automatici tramite feed RSS/Atom:
+Video automat prin feed RSS/Atom:
 
-- YouTube, tramite feed ufficiale se usi il channel id `UC...`, oppure tramite YouTube API se imposti `YOUTUBE_API_KEY`.
-- TikTok, tramite RSSHub o feed inserito.
-- Facebook, Instagram, Trovo, Rumble, X/Twitter e altre sorgenti RSS, se inserisci un feed supportato.
+- YouTube, prin feed oficial daca folosesti channel id `UC...`, sau prin YouTube API daca setezi `YOUTUBE_API_KEY`.
+- TikTok, prin RSSHub sau feed introdus manual.
+- Facebook, Instagram, Trovo, Rumble, X/Twitter si alte surse RSS, daca introduci un feed valid.
 
-Live senza API stabile:
+Live fara API stabil:
 
-- TikTok Live, Instagram Live, Facebook Live, Trovo, Rumble, X/Twitter e altre piattaforme possono essere aggiunte come sorgenti manuali e annunciate con `/streamer annuncia`.
-- Il bot non accetta controlli URL arbitrari per le live, per evitare che un comando Discord possa far chiamare al bot endpoint interni o non sicuri.
+- TikTok Live, Instagram Live, Facebook Live, Trovo, Rumble, X/Twitter si alte platforme pot fi adaugate ca surse manuale si anuntate cu `/streamer anunta`.
+- Botul nu accepta verificari URL arbitrare pentru live, ca sa nu poata fi folosit ca proxy spre servicii interne.
 
-## Setup locale
+## Setup local
 
-1. Installa Node.js 20 o superiore.
-2. Installa dipendenze:
+1. Instaleaza Node.js 20 sau mai nou.
+2. Instaleaza dependintele:
 
 ```bash
 npm install
 ```
 
-3. Copia `.env.example` in `.env` e imposta almeno:
+3. Copiaza `.env.example` in `.env` si seteaza cel putin:
 
 ```bash
-DISCORD_TOKEN=token_del_bot
+DISCORD_TOKEN=token_bot
 DISCORD_GUILD_ID=1505903653079351357
 ```
 
-4. Avvia:
+4. Porneste botul:
 
 ```bash
 npm start
 ```
 
-## Variabili Railway
+## Variabile Railway
 
-Imposta su Railway:
+Seteaza pe Railway:
 
 ```bash
-DISCORD_TOKEN=token_del_bot
+DISCORD_TOKEN=token_bot
 DISCORD_GUILD_ID=1505903653079351357
 ALLOWED_ROLE_IDS=1505905849774641243,1519377368354132110,1505906085901504522
 DATA_DIR=/data
@@ -72,69 +74,83 @@ YOUTUBE_API_KEY=api_key_youtube
 RSSHUB_URL=https://rsshub.app
 ```
 
-Consiglio: crea un Railway Volume montato su `/data`, cosi il file di configurazione resta salvato anche dopo i restart.
+Recomandare: creeaza un Railway Volume montat pe `/data`, ca fisierul de configuratie sa ramana salvat dupa restart.
 
-## Permessi Discord
+## Permisiuni Discord
 
-Invita il bot con scope:
+Invita botul cu scope:
 
 - `bot`
 - `applications.commands`
 
-Permessi consigliati:
+Permisiuni recomandate:
 
 - View Channels
 - Send Messages
 - Read Message History
-- Mention Roles, solo se vuoi usare `ruolo_ping`
+- Mention Roles, doar daca folosesti `rol_ping`
 
-## Comandi
+## Comenzi
 
-`/stato`
-Mostra lo stato del bot, sorgenti configurate e canali default.
+`/help`
+Afiseaza toate comenzile botului si descrierea lor.
 
-`/canale imposta tipo:<live|video> canale:#canale`
-Imposta il canale default per live o video.
+`/status`
+Afiseaza statusul botului si configuratia.
 
-`/canale mostra`
-Mostra i canali default.
+`/live platforma:<...> utilizator:<nume> canal:#canal`
+Adauga o sursa live si selecteaza direct canalul unde se trimit notificarile.
 
-`/canale rimuovi tipo:<live|video>`
-Rimuove il canale default.
-
-`/streamer aggiungi tipo:<live|video> piattaforma:<...> utente:<nome>`
-Aggiunge una sorgente. Puoi indicare anche `canale`, `nome`, `url`, `feed`, `messaggio`, `ruolo_ping`, `notifica_subito`.
-
-Esempi:
+Exemple:
 
 ```text
-/streamer aggiungi tipo:live piattaforma:twitch utente:nome_twitch canale:#live
-/streamer aggiungi tipo:live piattaforma:youtube utente:@handle_youtube canale:#live
-/streamer aggiungi tipo:live piattaforma:kick utente:nome_kick canale:#live
-/streamer aggiungi tipo:video piattaforma:youtube utente:UCxxxxxxxxxxxxxxxxxxxx canale:#video
-/streamer aggiungi tipo:video piattaforma:tiktok utente:@nome_tiktok canale:#video
-/streamer aggiungi tipo:video piattaforma:instagram utente:nome feed:https://rsshub.app/instagram/user/nome canale:#video
+/live platforma:twitch utilizator:nume_twitch canal:#live
+/live platforma:youtube utilizator:@handle_youtube canal:#live
+/live platforma:kick utilizator:nume_kick canal:#live
 ```
 
+`/video platforma:<...> utilizator:<nume> canal:#canal`
+Adauga o sursa video si selecteaza direct canalul unde se trimit notificarile. Pentru platforme fara feed automat, completeaza si `feed`.
+
+Exemple:
+
+```text
+/video platforma:youtube utilizator:UCxxxxxxxxxxxxxxxxxxxx canal:#video
+/video platforma:tiktok utilizator:@nume_tiktok canal:#video
+/video platforma:instagram utilizator:nume feed:https://rsshub.app/instagram/user/nume canal:#video
+```
+
+`/canal seteaza tip:<live|video> canal:#canal`
+Seteaza canalul implicit pentru live sau video.
+
+`/canal arata`
+Afiseaza canalele implicite.
+
+`/canal sterge tip:<live|video>`
+Sterge canalul implicit.
+
+`/streamer adauga tip:<live|video> platforma:<...> utilizator:<nume>`
+Comanda avansata pentru adaugare. Pentru adaugare rapida foloseste mai simplu `/live` sau `/video`.
+
 `/streamer lista`
-Lista tutte le sorgenti.
+Afiseaza toate sursele.
 
 `/streamer modifica id:<id>`
-Modifica canale, messaggio, feed, nome, url, ping o stato automatico.
+Modifica o sursa existenta.
 
-`/streamer rimuovi id:<id>`
-Rimuove una sorgente.
+`/streamer sterge id:<id>`
+Sterge o sursa.
 
 `/streamer test id:<id>`
-Mostra una preview. Con `invia:true` manda davvero il test nel canale configurato.
+Afiseaza un preview. Cu `trimite:true` trimite testul in canalul configurat.
 
-`/streamer annuncia id:<id> titolo:<testo> url:<link>`
-Invia manualmente una notifica usando la sorgente, il canale, il ruolo ping e il template configurati. Serve per live su piattaforme senza API affidabile.
+`/streamer anunta id:<id> titlu:<text> url:<link>`
+Trimite manual o notificare folosind sursa, canalul, rolul ping si template-ul configurat.
 
-`/messaggio imposta tipo:<live|video> testo:<template>`
-Modifica il messaggio globale.
+`/mesaj seteaza tip:<live|video> text:<template>`
+Modifica mesajul global.
 
-Placeholder disponibili:
+Placeholder disponibile:
 
 ```text
 {mention} {creator} {username} {platform} {type} {title} {url} {channel} {publishedAt} {startedAt}
@@ -147,23 +163,21 @@ live: {mention} {creator} este LIVE pe {platform}: {url}
 video: {mention} {creator} a publicat un video nou pe {platform}: {title} {url}
 ```
 
-`/ruoli aggiungi ruolo:@ruolo`
-Aggiunge un ruolo autorizzato.
+`/roluri adauga rol:@rol`
+Adauga un rol autorizat.
 
-`/ruoli rimuovi ruolo:@ruolo`
-Rimuove un ruolo autorizzato.
+`/roluri sterge rol:@rol`
+Sterge un rol autorizat.
 
-`/ruoli lista`
-Mostra i ruoli autorizzati.
+`/roluri lista`
+Afiseaza rolurile autorizate.
 
-## Feed sicuri
+## Feed-uri sigure
 
-I feed inseriti via comando devono essere `https` e su domini consentiti, ad esempio:
+Feed-urile introduse prin comenzi trebuie sa fie `https` si pe domenii permise, de exemplu:
 
 - `www.youtube.com`
 - `rsshub.app`
 - `rss.app`
-- domini ufficiali delle piattaforme elencate
-- il dominio configurato in `RSSHUB_URL`
-
-Questo evita che il bot venga usato come proxy verso IP locali o servizi privati.
+- domenii oficiale ale platformelor listate
+- domeniul configurat in `RSSHUB_URL`
