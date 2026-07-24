@@ -1,4 +1,4 @@
-const { ChannelType } = require("discord.js");
+﻿const { ChannelType } = require("discord.js");
 const { nowIso } = require("./storage");
 const { defaultPlatformUrl, formatMessage } = require("./messages");
 const { getLatestRssItem } = require("./providers/rss");
@@ -112,8 +112,15 @@ async function sendNotification(client, data, source, event) {
 
 function shouldNotify(source, event) {
   if (!event) return false;
+
+  if (source.type === "live") {
+    if (!source.cursorReady) return source.notifyOnFirstCheck === true || source.lastLive !== true;
+    if (source.lastLive !== true) return true;
+    if (!source.lastNotifiedAt) return true;
+    return event.id !== source.lastEventId;
+  }
+
   if (!source.cursorReady) return source.notifyOnFirstCheck === true;
-  if (source.type === "live" && source.lastLive !== true) return true;
   return event.id !== source.lastEventId;
 }
 

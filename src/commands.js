@@ -1,4 +1,4 @@
-const {
+﻿const {
   ChannelType,
   PermissionFlagsBits,
   MessageFlags,
@@ -646,7 +646,7 @@ async function addSourceFromDirectCommand(interaction, store, type) {
     enabled: mode === "auto",
     manualOnly: mode === "manual",
     cursorReady: false,
-    notifyOnFirstCheck: false
+    notifyOnFirstCheck: type === "live" && mode === "auto"
   };
 
   const validationError = await validateSourceInput(input);
