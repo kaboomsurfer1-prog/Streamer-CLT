@@ -541,8 +541,8 @@ async function validateSourceInput(input) {
     if (input.platform === "youtube" && !process.env.YOUTUBE_API_KEY) {
       return "Pentru live YouTube automat trebuie YOUTUBE_API_KEY pe Railway.";
     }
-    if (input.platform === "tiktok" && !process.env.TIKTOOLS_API_KEY) {
-      return "Pentru live TikTok automat trebuie TIKTOOLS_API_KEY pe Railway.";
+    if (input.platform === "tiktok" && !process.env.TIKTOOL_API_KEY && !process.env.TIKTOOLS_API_KEY) {
+      return "Pentru live TikTok automat trebuie TIKTOOL_API_KEY pe Railway.";
     }
     return null;
   }

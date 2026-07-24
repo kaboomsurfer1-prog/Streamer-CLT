@@ -24,7 +24,7 @@ Live automat native:
 - Twitch, prin Twitch API.
 - YouTube Live, prin YouTube Data API.
 - Kick, prin endpoint public Kick.
-- TikTok Live, prin TikTools API cu `TIKTOOLS_API_KEY`.
+- TikTok Live, prin TikTools API cu `TIKTOOL_API_KEY`.
 
 Video automat prin feed RSS/Atom:
 
@@ -72,7 +72,7 @@ CHECK_INTERVAL_SECONDS=120
 TWITCH_CLIENT_ID=client_id_twitch
 TWITCH_CLIENT_SECRET=client_secret_twitch
 YOUTUBE_API_KEY=api_key_youtube
-TIKTOOLS_API_KEY=api_key_tiktools
+TIKTOOL_API_KEY=api_key_tiktools
 RSSHUB_URL=https://rsshub.app
 ```
 

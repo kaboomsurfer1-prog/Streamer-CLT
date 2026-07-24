@@ -1,7 +1,7 @@
 function requireTikToolsApiKey() {
-  const apiKey = process.env.TIKTOOLS_API_KEY;
+  const apiKey = process.env.TIKTOOL_API_KEY || process.env.TIKTOOLS_API_KEY;
   if (!apiKey) {
-    throw new Error("TIKTOOLS_API_KEY este obligatorie pentru live TikTok automat.");
+    throw new Error("TIKTOOL_API_KEY este obligatorie pentru live TikTok automat.");
   }
   return apiKey;
 }
