@@ -4,6 +4,8 @@ const net = require("node:net");
 const STATIC_ALLOWED_HOSTS = new Set([
   "rsshub.app",
   "rss.app",
+  "www.twitch.tv",
+  "twitch.tv",
   "www.youtube.com",
   "youtube.com",
   "youtu.be",
@@ -92,7 +94,7 @@ async function assertSafeExternalUrl(value) {
   }
 
   if (!isAllowedHostname(url.hostname)) {
-    throw new Error(`Domeniu nepermis pentru feed: ${url.hostname}`);
+    throw new Error(`Domeniu nepermis pentru URL: ${url.hostname}`);
   }
 
   const literalIpVersion = net.isIP(url.hostname);
