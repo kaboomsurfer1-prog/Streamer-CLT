@@ -418,11 +418,15 @@ function buildCommands() {
     .setName("status")
     .setDescription("Afiseaza statusul botului si configuratia");
 
+  const dashboard = new SlashCommandBuilder()
+    .setName("dashboard")
+    .setDescription("Trimite linkul dashboard-ului web");
+
   const help = new SlashCommandBuilder()
     .setName("help")
     .setDescription("Afiseaza toate comenzile botului");
 
-  return [live, video, streamer, canal, mesaj, roluri, status, help];
+  return [live, video, streamer, canal, mesaj, roluri, status, dashboard, help];
 }
 
 function hasAllowedRole(interaction, allowedRoleIds) {
@@ -605,6 +609,33 @@ function sourceModeNote(source) {
 function discordUserName(user) {
   return user.globalName || user.username || user.tag || user.id;
 }
+function getDashboardUrl() {
+  const configured = process.env.DASHBOARD_URL || process.env.PUBLIC_URL;
+  if (configured) return configured.replace(/\/+$/, "");
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  return null;
+}
+
+async function handleDashboard(interaction) {
+  const url = getDashboardUrl();
+  const passwordNote = process.env.DASHBOARD_PASSWORD
+    ? "Parola este cea setata in DASHBOARD_PASSWORD pe Railway."
+    : "Dashboard-ul nu are parola setata. Adauga DASHBOARD_PASSWORD pe Railway.";
+
+  if (!url) {
+    await interaction.reply({
+      content: "Dashboard-ul nu are URL configurat. Seteaza DASHBOARD_URL pe Railway sau activeaza domeniul public al serviciului.",
+      flags: MessageFlags.Ephemeral
+    });
+    return;
+  }
+
+  await interaction.reply({
+    content: `Dashboard Bot Streamers CLT: ${url}\n${passwordNote}`,
+    flags: MessageFlags.Ephemeral
+  });
+}
+
 
 async function addSourceFromDirectCommand(interaction, store, type) {
   const discordUser = interaction.options.getUser("user_discord", true);
@@ -975,6 +1006,7 @@ async function handleHelp(interaction) {
       "/live - Adauga live: user Discord, platforma, link canal, canal Discord, mesaj, tag si mod.",
       "/video - Adauga video: user Discord, platforma, link canal, canal Discord, mesaj, tag si mod.",
       "/status - Afiseaza statusul botului si configuratia.",
+      "/dashboard - Trimite linkul dashboard-ului web.",
       "/canal seteaza - Seteaza canalul implicit pentru live sau video.",
       "/canal arata - Afiseaza canalele implicite.",
       "/canal sterge - Sterge canalul implicit pentru un tip.",
@@ -1031,6 +1063,11 @@ async function handleInteraction(interaction, store) {
 
     if (interaction.commandName === "status") {
       await handleStatus(interaction, store);
+      return;
+    }
+
+    if (interaction.commandName === "dashboard") {
+      await handleDashboard(interaction);
       return;
     }
 

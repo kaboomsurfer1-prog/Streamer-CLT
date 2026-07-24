@@ -76,6 +76,7 @@ YOUTUBE_API_KEY=api_key_youtube
 TIKTOOL_API_KEY=api_key_tiktools
 RSSHUB_URL=https://rsshub.app
 DASHBOARD_PASSWORD=parola_admin_dashboard
+DASHBOARD_URL=https://nome-progetto.up.railway.app
 ```
 
 Recomandare: creeaza un Railway Volume montat pe `/data`, ca fisierul de configuratie sa ramana salvat dupa restart.
@@ -102,6 +103,7 @@ Variabila obligatorie:
 
 ```bash
 DASHBOARD_PASSWORD=parola_admin_dashboard
+DASHBOARD_URL=https://nome-progetto.up.railway.app
 ```
 
 Din dashboard poti:
@@ -128,6 +130,9 @@ Afiseaza toate comenzile botului si descrierea lor.
 
 `/status`
 Afiseaza statusul botului si configuratia.
+
+`/dashboard`
+Trimite linkul dashboard-ului web in privat.
 
 `/live user_discord:@user platforma:<...> link:<url> canal:#canal mesaj:<text> tag:<user|everyone|here|role> mod:<auto|manual>`
 Adauga o sursa live. Linkul trebuie sa fie valid pentru platforma aleasa. Daca alegi `tag:role`, completeaza si `rol_ping`.
