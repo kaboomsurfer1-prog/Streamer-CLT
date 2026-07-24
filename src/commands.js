@@ -1,6 +1,7 @@
 const {
   ChannelType,
   PermissionFlagsBits,
+  MessageFlags,
   SlashCommandBuilder
 } = require("discord.js");
 const { DEFAULT_TEMPLATES } = require("./config");
@@ -447,7 +448,7 @@ async function ensureAuthorized(interaction, store) {
 
   await interaction.reply({
     content: "Nu ai permisiunea sa folosesti aceasta comanda.",
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
   return false;
 }
@@ -618,7 +619,7 @@ async function addSourceFromDirectCommand(interaction, store, type) {
 
   const tagError = validateTagInput(tagMode, mentionRole);
   if (tagError) {
-    await interaction.reply({ content: tagError, ephemeral: true });
+    await interaction.reply({ content: tagError, flags: MessageFlags.Ephemeral });
     return;
   }
 
@@ -626,7 +627,7 @@ async function addSourceFromDirectCommand(interaction, store, type) {
   try {
     linkData = await validatePlatformLink(platform, rawLink);
   } catch (error) {
-    await interaction.reply({ content: error.message, ephemeral: true });
+    await interaction.reply({ content: error.message, flags: MessageFlags.Ephemeral });
     return;
   }
 
@@ -650,14 +651,14 @@ async function addSourceFromDirectCommand(interaction, store, type) {
 
   const validationError = await validateSourceInput(input);
   if (validationError) {
-    await interaction.reply({ content: validationError, ephemeral: true });
+    await interaction.reply({ content: validationError, flags: MessageFlags.Ephemeral });
     return;
   }
 
   const source = await store.addSource(input);
   await interaction.reply({
     content: `Sursa ${type} adaugata: ${describeSource(source)}${sourceModeNote(source)}`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 async function handleStreamer(interaction, store) {
@@ -698,21 +699,21 @@ async function handleStreamer(interaction, store) {
     if (!input.channelId) {
       await interaction.reply({
         content: "Alege un canal sau seteaza mai intai un canal implicit cu /canal seteaza.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
 
     const validationError = await validateSourceInput(input);
     if (validationError) {
-      await interaction.reply({ content: validationError, ephemeral: true });
+      await interaction.reply({ content: validationError, flags: MessageFlags.Ephemeral });
       return;
     }
 
     const source = await store.addSource(input);
     await interaction.reply({
       content: `Sursa adaugata: ${describeSource(source)}${sourceModeNote(source)}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -721,7 +722,7 @@ async function handleStreamer(interaction, store) {
     const id = interaction.options.getInteger("id", true);
     const source = findSource(store, id);
     if (!source) {
-      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, ephemeral: true });
+      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -761,7 +762,7 @@ async function handleStreamer(interaction, store) {
 
     const validationError = await validateSourceInput(merged);
     if (validationError) {
-      await interaction.reply({ content: validationError, ephemeral: true });
+      await interaction.reply({ content: validationError, flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -775,7 +776,7 @@ async function handleStreamer(interaction, store) {
     const updated = await store.updateSource(id, patch);
     await interaction.reply({
       content: `Sursa actualizata: ${describeSource(updated)}${sourceModeNote(updated)}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -785,7 +786,7 @@ async function handleStreamer(interaction, store) {
     const removed = await store.removeSource(id);
     await interaction.reply({
       content: removed ? `Sursa stearsa: ${describeSource(removed)}` : `Sursa #${id} nu a fost gasita.`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -802,7 +803,7 @@ async function handleStreamer(interaction, store) {
 
     await interaction.reply({
       content: sourceListText(sources),
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -812,19 +813,19 @@ async function handleStreamer(interaction, store) {
     const send = interaction.options.getBoolean("trimite") === true;
     const source = findSource(store, id);
     if (!source) {
-      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, ephemeral: true });
+      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, flags: MessageFlags.Ephemeral });
       return;
     }
 
     if (send) {
       await sendTestNotification(interaction.client, store, source);
-      await interaction.reply({ content: "Notificarea de test a fost trimisa.", ephemeral: true });
+      await interaction.reply({ content: "Notificarea de test a fost trimisa.", flags: MessageFlags.Ephemeral });
       return;
     }
 
     await interaction.reply({
       content: `Previzualizare:\n${sourcePreview(store, source)}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -833,14 +834,14 @@ async function handleStreamer(interaction, store) {
     const id = interaction.options.getInteger("id", true);
     const source = findSource(store, id);
     if (!source) {
-      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, ephemeral: true });
+      await interaction.reply({ content: `Sursa #${id} nu a fost gasita.`, flags: MessageFlags.Ephemeral });
       return;
     }
 
     const title = interaction.options.getString("titlu")?.trim() || null;
     const url = interaction.options.getString("url")?.trim() || null;
     await sendManualNotification(interaction.client, store, source, { title, url });
-    await interaction.reply({ content: "Notificarea manuala a fost trimisa.", ephemeral: true });
+    await interaction.reply({ content: "Notificarea manuala a fost trimisa.", flags: MessageFlags.Ephemeral });
   }
 }
 
@@ -853,7 +854,7 @@ async function handleCanal(interaction, store) {
     const channels = await store.setDefaultChannel(type, channel.id);
     await interaction.reply({
       content: `Canal implicit ${type}: <#${channels[type]}>`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -863,7 +864,7 @@ async function handleCanal(interaction, store) {
     await store.setDefaultChannel(type, null);
     await interaction.reply({
       content: `Canalul implicit ${type} a fost sters.`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -873,7 +874,7 @@ async function handleCanal(interaction, store) {
     content: `Live: ${channels.live ? `<#${channels.live}>` : "nesetat"}\nVideo: ${
       channels.video ? `<#${channels.video}>` : "nesetat"
     }`,
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -886,7 +887,7 @@ async function handleMesaj(interaction, store) {
     await store.setTemplate(type, text);
     await interaction.reply({
       content: `Template-ul ${type} a fost actualizat.\nPlaceholder: {mention}, {creator}, {username}, {platform}, {type}, {title}, {url}, {channel}, {publishedAt}, {startedAt}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -896,7 +897,7 @@ async function handleMesaj(interaction, store) {
     const template = await store.resetTemplate(type);
     await interaction.reply({
       content: `Template-ul ${type} a fost resetat:\n${template}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -909,7 +910,7 @@ async function handleMesaj(interaction, store) {
 
   await interaction.reply({
     content: lines.join("\n"),
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -921,7 +922,7 @@ async function handleRoluri(interaction, store) {
     const roles = await store.addAllowedRole(role.id);
     await interaction.reply({
       content: `Rol autorizat: <@&${role.id}>\nTotal roluri: ${roles.length}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -931,7 +932,7 @@ async function handleRoluri(interaction, store) {
     const roles = await store.removeAllowedRole(role.id);
     await interaction.reply({
       content: `Rol sters: <@&${role.id}>\nTotal roluri: ${roles.length}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -939,7 +940,7 @@ async function handleRoluri(interaction, store) {
   const roles = store.snapshot().allowedRoleIds;
   await interaction.reply({
     content: roles.length ? roles.map((roleId) => `<@&${roleId}>`).join("\n") : "Nu exista roluri configurate.",
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -962,7 +963,7 @@ async function handleStatus(interaction, store) {
       `Canal video: ${data.defaultChannels.video ? `<#${data.defaultChannels.video}>` : "nesetat"}`,
       `Platforme: ${PLATFORMS.map((item) => platformLabel(item.value)).join(", ")}`
     ].join("\n"),
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -989,7 +990,7 @@ async function handleHelp(interaction) {
       "/roluri sterge - Sterge un rol autorizat.",
       "/roluri lista - Afiseaza rolurile autorizate."
     ].join("\n"),
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
 
@@ -1039,7 +1040,7 @@ async function handleInteraction(interaction, store) {
   } catch (error) {
     const payload = {
       content: `Eroare: ${error.message}`,
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     };
 
     if (interaction.deferred || interaction.replied) {

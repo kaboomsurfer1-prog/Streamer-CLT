@@ -36,6 +36,33 @@ function isLive(row) {
   );
 }
 
+async function parseTikToolsResponse(response) {
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    throw new Error("TikTools a refuzat cheia API (HTTP 403). Verifica TIKTOOL_API_KEY, planul si quota pe tik.tools/dashboard.");
+  }
+
+  if (response.status === 429) {
+    throw new Error("TikTools quota/rate limit atins. Verifica planul sau asteapta resetarea limitei.");
+  }
+
+  if (!response.ok) {
+    throw new Error(`Eroare TikTools TikTok Live: HTTP ${response.status}`);
+  }
+
+  if (payload?.status_code && payload.status_code !== 0) {
+    throw new Error(`Eroare TikTools: ${payload.message || payload.status_msg || payload.status_code}`);
+  }
+
+  return payload;
+}
+
 async function getTikTokLive(source) {
   const apiKey = requireTikToolsApiKey();
   const username = cleanTikTokUsername(source.username);
@@ -43,21 +70,21 @@ async function getTikTokLive(source) {
     throw new Error("Username TikTok lipsa.");
   }
 
-  const response = await fetch(`https://api.tik.tools/webcast/bulk_live_check?apiKey=${encodeURIComponent(apiKey)}`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      "User-Agent": "Bot-Streamers-CLT/1.0"
-    },
-    body: JSON.stringify({ unique_ids: [username] })
+  const query = new URLSearchParams({
+    apiKey,
+    unique_id: username
   });
 
-  if (!response.ok) {
-    throw new Error(`Eroare TikTools TikTok Live: HTTP ${response.status}`);
-  }
+  const response = await fetch(`https://api.tik.tools/webcast/check_alive?${query.toString()}`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "Bot-Streamers-CLT/1.0",
+      "x-api-key": apiKey
+    }
+  });
 
-  const payload = await response.json();
+  const payload = await parseTikToolsResponse(response);
   const row = pickLiveRow(payload);
   if (!isLive(row)) return null;
 

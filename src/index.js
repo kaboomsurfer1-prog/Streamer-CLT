@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const { Client, GatewayIntentBits, REST, Routes } = require("discord.js");
+const { Client, Events, GatewayIntentBits, REST, Routes } = require("discord.js");
 const { getDataFilePath, getGuildId } = require("./config");
 const { buildCommands, handleInteraction } = require("./commands");
 const { startHealthServer } = require("./health");
@@ -33,7 +33,7 @@ async function main() {
     intents: [GatewayIntentBits.Guilds]
   });
 
-  client.once("ready", async () => {
+  client.once(Events.ClientReady, async () => {
     logger.info(`Online come ${client.user.tag}`);
     await registerGuildCommands(client, guildId);
     startHealthServer(store);
