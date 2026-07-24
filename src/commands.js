@@ -1,4 +1,4 @@
-﻿const {
+const {
   ChannelType,
   PermissionFlagsBits,
   MessageFlags,
@@ -1053,5 +1053,7 @@ async function handleInteraction(interaction, store) {
 
 module.exports = {
   buildCommands,
-  handleInteraction
+  handleInteraction,
+  validatePlatformLink,
+  validateSourceInput
 };

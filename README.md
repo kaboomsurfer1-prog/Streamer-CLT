@@ -15,7 +15,8 @@ Bot Discord pentru serverul `1505903653079351357`, facut pentru notificari live 
 - Canale implicite separate pentru live si video.
 - Surse modificabile din Discord: adauga, modifica, sterge, lista, test, anunta.
 - Template-uri globale sau personalizate pentru fiecare sursa.
-- Endpoint `/health` pentru Railway daca exista `PORT`.
+- Endpoint /health pentru Railway daca exista PORT.
+- Dashboard web protejat cu parola pentru adaugare, modificare, test, notificare manuala si stergere surse.
 
 ## Platforme
 
@@ -74,6 +75,7 @@ TWITCH_CLIENT_SECRET=client_secret_twitch
 YOUTUBE_API_KEY=api_key_youtube
 TIKTOOL_API_KEY=api_key_tiktools
 RSSHUB_URL=https://rsshub.app
+DASHBOARD_PASSWORD=parola_admin_dashboard
 ```
 
 Recomandare: creeaza un Railway Volume montat pe `/data`, ca fisierul de configuratie sa ramana salvat dupa restart.
@@ -92,6 +94,33 @@ Permisiuni recomandate:
 - Read Message History
 - Mention Roles, doar daca folosesti `rol_ping`
 
+## Dashboard web
+
+Pe Railway, dupa deploy, deschide URL-ul serviciului. Prima pagina este dashboard-ul.
+
+Variabila obligatorie:
+
+```bash
+DASHBOARD_PASSWORD=parola_admin_dashboard
+```
+
+Din dashboard poti:
+
+- adauga live/video fara sa modifici codul;
+- alege user Discord, platforma, link canal, canal Discord, mesaj, tag si mod automat/manual;
+- modifica o sursa existenta;
+- trimite test in canal;
+- trimite manual notificarea live;
+- activa/dezactiva sau sterge surse;
+- vedere ultima eroare pentru fiecare sursa.
+
+Mesaj simplu recomandat pentru live:
+
+```text
+{mention} {creator} este LIVE pe {platform}: {url}
+```
+
+Pentru TikTok automat ramane necesara `TIKTOOL_API_KEY`. Daca TikTools raspunde HTTP 403, foloseste butonul `Anunta` pentru notificare manuala sau verifica cheia/API quota.
 ## Comenzi
 
 `/help`

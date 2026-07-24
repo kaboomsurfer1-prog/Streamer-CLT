@@ -36,7 +36,7 @@ async function main() {
   client.once(Events.ClientReady, async () => {
     logger.info(`Online come ${client.user.tag}`);
     await registerGuildCommands(client, guildId);
-    startHealthServer(store);
+    startHealthServer(store, client);
     startNotificationLoop(client, store);
   });
 
