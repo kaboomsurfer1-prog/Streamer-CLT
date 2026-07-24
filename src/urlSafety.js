@@ -128,6 +128,10 @@ async function fetchSafeText(value, options = {}, redirects = 0) {
     return fetchSafeText(nextUrl, options, redirects + 1);
   }
 
+  if (response.status === 403) {
+    throw new Error("Feed blocat HTTP 403. Pentru TikTok sau platforme similare foloseste un feed valid din RSS.app/RSSHub sau seteaza RSSHUB_URL pe Railway.");
+  }
+
   if (!response.ok) {
     throw new Error(`Eroare descarcare feed: HTTP ${response.status}`);
   }

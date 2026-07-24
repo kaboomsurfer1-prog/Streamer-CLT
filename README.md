@@ -6,7 +6,7 @@ Bot Discord pentru serverul `1505903653079351357`, facut pentru notificari live 
 
 - Comenzi slash in romana, protejate de roluri autorizate.
 - Comanda `/help` cu lista comenzilor si descrierea lor.
-- Comenzi separate pentru adaugare: `/live` pentru live si `/video` pentru video, ambele cu selectie obligatorie de canal.
+- Comenzi separate pentru adaugare: `/live` pentru live si `/video` pentru video. Ambele cer obligatoriu user Discord, platforma, link canal, canal Discord, mesaj custom, tag si mod automat/manual.
 - Roluri autorizate initial:
   - `1505905849774641243`
   - `1519377368354132110`
@@ -24,6 +24,7 @@ Live automat native:
 - Twitch, prin Twitch API.
 - YouTube Live, prin YouTube Data API.
 - Kick, prin endpoint public Kick.
+- TikTok Live, prin TikTools API cu `TIKTOOLS_API_KEY`.
 
 Video automat prin feed RSS/Atom:
 
@@ -33,7 +34,7 @@ Video automat prin feed RSS/Atom:
 
 Live fara API stabil:
 
-- TikTok Live, Instagram Live, Facebook Live, Trovo, Rumble, X/Twitter si alte platforme pot fi adaugate ca surse manuale si anuntate cu `/streamer anunta`.
+- Instagram Live, Facebook Live, Trovo, Rumble, X/Twitter si alte platforme fara provider automat pot fi adaugate ca surse manuale si anuntate cu `/streamer anunta`.
 - Botul nu accepta verificari URL arbitrare pentru live, ca sa nu poata fi folosit ca proxy spre servicii interne.
 
 ## Setup local
@@ -71,6 +72,7 @@ CHECK_INTERVAL_SECONDS=120
 TWITCH_CLIENT_ID=client_id_twitch
 TWITCH_CLIENT_SECRET=client_secret_twitch
 YOUTUBE_API_KEY=api_key_youtube
+TIKTOOLS_API_KEY=api_key_tiktools
 RSSHUB_URL=https://rsshub.app
 ```
 
@@ -98,26 +100,27 @@ Afiseaza toate comenzile botului si descrierea lor.
 `/status`
 Afiseaza statusul botului si configuratia.
 
-`/live platforma:<...> utilizator:<nume> canal:#canal`
-Adauga o sursa live si selecteaza direct canalul unde se trimit notificarile.
+`/live user_discord:@user platforma:<...> link:<url> canal:#canal mesaj:<text> tag:<user|everyone|here|role> mod:<auto|manual>`
+Adauga o sursa live. Linkul trebuie sa fie valid pentru platforma aleasa. Daca alegi `tag:role`, completeaza si `rol_ping`.
 
 Exemple:
 
 ```text
-/live platforma:twitch utilizator:nume_twitch canal:#live
-/live platforma:youtube utilizator:@handle_youtube canal:#live
-/live platforma:kick utilizator:nume_kick canal:#live
+/live user_discord:@User platforma:twitch link:https://www.twitch.tv/nume canal:#live mesaj:{mention} {creator} este LIVE pe {platform}: {url} tag:user mod:auto
+/live user_discord:@User platforma:youtube link:https://www.youtube.com/@handle canal:#live mesaj:{mention} {creator} este LIVE pe {platform}: {url} tag:everyone mod:auto
+/live user_discord:@User platforma:kick link:https://kick.com/nume canal:#live mesaj:{mention} {creator} este LIVE pe {platform}: {url} tag:here mod:auto
+/live user_discord:@User platforma:tiktok link:https://www.tiktok.com/@nume canal:#live mesaj:{mention} {creator} este LIVE pe {platform}: {url} tag:role rol_ping:@Rol mod:auto
 ```
 
-`/video platforma:<...> utilizator:<nume> canal:#canal`
-Adauga o sursa video si selecteaza direct canalul unde se trimit notificarile. Pentru platforme fara feed automat, completeaza si `feed`.
+`/video user_discord:@user platforma:<...> link:<url> canal:#canal mesaj:<text> tag:<user|everyone|here|role> mod:<auto|manual>`
+Adauga o sursa video. Linkul trebuie sa fie valid pentru platforma aleasa. Pentru platforme fara feed automat, completeaza si `feed`.
 
 Exemple:
 
 ```text
-/video platforma:youtube utilizator:UCxxxxxxxxxxxxxxxxxxxx canal:#video
-/video platforma:tiktok utilizator:@nume_tiktok canal:#video
-/video platforma:instagram utilizator:nume feed:https://rsshub.app/instagram/user/nume canal:#video
+/video user_discord:@User platforma:youtube link:https://www.youtube.com/channel/UCxxxxxxxxxxxxxxxxxxxx canal:#video mesaj:{mention} {creator} a publicat un video pe {platform}: {url} tag:user mod:auto
+/video user_discord:@User platforma:tiktok link:https://www.tiktok.com/@nume canal:#video mesaj:{mention} video nou pe {platform}: {url} tag:here mod:auto
+/video user_discord:@User platforma:instagram link:https://www.instagram.com/nume canal:#video mesaj:{mention} postare noua: {url} tag:role rol_ping:@Rol mod:auto feed:https://rsshub.app/instagram/user/nume
 ```
 
 `/canal seteaza tip:<live|video> canal:#canal`
@@ -129,8 +132,6 @@ Afiseaza canalele implicite.
 `/canal sterge tip:<live|video>`
 Sterge canalul implicit.
 
-`/streamer adauga tip:<live|video> platforma:<...> utilizator:<nume>`
-Comanda avansata pentru adaugare. Pentru adaugare rapida foloseste mai simplu `/live` sau `/video`.
 
 `/streamer lista`
 Afiseaza toate sursele.
@@ -153,7 +154,7 @@ Modifica mesajul global.
 Placeholder disponibile:
 
 ```text
-{mention} {creator} {username} {platform} {type} {title} {url} {channel} {publishedAt} {startedAt}
+{mention} {discordUser} {creator} {username} {platform} {type} {title} {url} {channel} {publishedAt} {startedAt}
 ```
 
 Template default:

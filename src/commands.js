@@ -32,9 +32,30 @@ const PLATFORMS = [
   { name: "RSS", value: "rss" }
 ];
 
-const LIVE_NATIVE_PLATFORMS = new Set(["twitch", "youtube", "kick"]);
+const LIVE_NATIVE_PLATFORMS = new Set(["twitch", "youtube", "kick", "tiktok"]);
 const LIVE_PLATFORMS = PLATFORMS.filter((platform) => platform.value !== "rss");
 const VIDEO_PLATFORMS = PLATFORMS;
+const TAG_CHOICES = [
+  { name: "User Discord", value: "user" },
+  { name: "@everyone", value: "everyone" },
+  { name: "@here", value: "here" },
+  { name: "Rol", value: "role" }
+];
+const MODE_CHOICES = [
+  { name: "Automat", value: "auto" },
+  { name: "Manual", value: "manual" }
+];
+const PLATFORM_HOSTS = {
+  twitch: ["twitch.tv"],
+  youtube: ["youtube.com", "youtu.be"],
+  tiktok: ["tiktok.com"],
+  kick: ["kick.com"],
+  facebook: ["facebook.com"],
+  instagram: ["instagram.com"],
+  trovo: ["trovo.live"],
+  rumble: ["rumble.com"],
+  x: ["x.com", "twitter.com"]
+};
 
 function addTypeOption(option) {
   return option
@@ -95,156 +116,99 @@ function addTextChannelOption(option, required = true) {
 function addFeedOption(option) {
   return option
     .setName("feed")
-    .setDescription("Feed RSS/Atom https pentru video sau platforme fara API")
+    .setDescription("Feed RSS/Atom https pentru video, daca platforma are nevoie")
     .setRequired(false)
     .setMaxLength(500);
+}
+
+function addTagOption(option, required = true) {
+  return option
+    .setName("tag")
+    .setDescription("Cine trebuie mentionat in notificare")
+    .setRequired(required)
+    .addChoices(...TAG_CHOICES);
+}
+
+function addModeOption(option, required = true) {
+  return option
+    .setName("mod")
+    .setDescription("Trimite notificari automat sau doar manual")
+    .setRequired(required)
+    .addChoices(...MODE_CHOICES);
 }
 
 function buildCommands() {
   const live = new SlashCommandBuilder()
     .setName("live")
-    .setDescription("Adauga o sursa live si alege canalul de notificari")
+    .setDescription("Adauga o notificare live")
+    .addUserOption((option) =>
+      option
+        .setName("user_discord")
+        .setDescription("Userul Discord care intra in live")
+        .setRequired(true)
+    )
     .addStringOption(addLivePlatformOption)
     .addStringOption((option) =>
       option
-        .setName("utilizator")
-        .setDescription("Username, handle sau channel id")
+        .setName("link")
+        .setDescription("Linkul canalului de pe platforma aleasa")
         .setRequired(true)
-        .setMaxLength(120)
+        .setMaxLength(500)
     )
     .addChannelOption((option) => addTextChannelOption(option, true))
     .addStringOption((option) =>
       option
-        .setName("nume")
-        .setDescription("Numele afisat in mesaj")
-        .setRequired(false)
-        .setMaxLength(120)
-    )
-    .addStringOption((option) =>
-      option
-        .setName("url")
-        .setDescription("URL profil, live sau canal")
-        .setRequired(false)
-        .setMaxLength(500)
-    )
-    .addStringOption((option) =>
-      option
         .setName("mesaj")
-        .setDescription("Template doar pentru aceasta sursa live")
-        .setRequired(false)
+        .setDescription("Mesaj custom cu {mention}, {creator}, {platform}, {url}")
+        .setRequired(true)
         .setMaxLength(1500)
     )
+    .addStringOption((option) => addTagOption(option, true))
+    .addStringOption((option) => addModeOption(option, true))
     .addRoleOption((option) =>
       option
         .setName("rol_ping")
-        .setDescription("Rolul mentionat in notificari")
-        .setRequired(false)
-    )
-    .addBooleanOption((option) =>
-      option
-        .setName("notifica_imediat")
-        .setDescription("Trimite si live-ul deja pornit la prima verificare")
+        .setDescription("Rolul mentionat daca tag este Rol")
         .setRequired(false)
     );
 
   const video = new SlashCommandBuilder()
     .setName("video")
-    .setDescription("Adauga o sursa video si alege canalul de notificari")
+    .setDescription("Adauga o notificare video")
+    .addUserOption((option) =>
+      option
+        .setName("user_discord")
+        .setDescription("Userul Discord care publica video")
+        .setRequired(true)
+    )
     .addStringOption(addVideoPlatformOption)
     .addStringOption((option) =>
       option
-        .setName("utilizator")
-        .setDescription("Username, handle, channel id YouTube sau numele sursei")
+        .setName("link")
+        .setDescription("Linkul canalului/profilului de pe platforma aleasa")
         .setRequired(true)
-        .setMaxLength(120)
+        .setMaxLength(500)
     )
     .addChannelOption((option) => addTextChannelOption(option, true))
     .addStringOption((option) =>
       option
-        .setName("nume")
-        .setDescription("Numele afisat in mesaj")
-        .setRequired(false)
-        .setMaxLength(120)
-    )
-    .addStringOption((option) =>
-      option
-        .setName("url")
-        .setDescription("URL profil sau canal")
-        .setRequired(false)
-        .setMaxLength(500)
-    )
-    .addStringOption(addFeedOption)
-    .addStringOption((option) =>
-      option
         .setName("mesaj")
-        .setDescription("Template doar pentru aceasta sursa video")
-        .setRequired(false)
+        .setDescription("Mesaj custom cu {mention}, {creator}, {platform}, {url}")
+        .setRequired(true)
         .setMaxLength(1500)
     )
+    .addStringOption((option) => addTagOption(option, true))
+    .addStringOption((option) => addModeOption(option, true))
     .addRoleOption((option) =>
       option
         .setName("rol_ping")
-        .setDescription("Rolul mentionat in notificari")
+        .setDescription("Rolul mentionat daca tag este Rol")
         .setRequired(false)
     )
-    .addBooleanOption((option) =>
-      option
-        .setName("notifica_imediat")
-        .setDescription("Trimite si ultimul video gasit la prima verificare")
-        .setRequired(false)
-    );
+    .addStringOption(addFeedOption);
   const streamer = new SlashCommandBuilder()
     .setName("streamer")
-    .setDescription("Gestioneaza streamerii si sursele video")
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("adauga")
-        .setDescription("Adauga o sursa noua")
-        .addStringOption(addTypeOption)
-        .addStringOption(addPlatformOption)
-        .addStringOption((option) =>
-          option
-            .setName("utilizator")
-            .setDescription("Username, handle, channel id YouTube sau numele sursei")
-            .setRequired(true)
-            .setMaxLength(120)
-        )
-        .addChannelOption((option) => addTextChannelOption(option, false))
-        .addStringOption((option) =>
-          option
-            .setName("nume")
-            .setDescription("Numele afisat in mesaj")
-            .setRequired(false)
-            .setMaxLength(120)
-        )
-        .addStringOption((option) =>
-          option
-            .setName("url")
-            .setDescription("URL profil, live sau canal")
-            .setRequired(false)
-            .setMaxLength(500)
-        )
-        .addStringOption(addFeedOption)
-        .addStringOption((option) =>
-          option
-            .setName("mesaj")
-            .setDescription("Template doar pentru aceasta sursa")
-            .setRequired(false)
-            .setMaxLength(1500)
-        )
-        .addRoleOption((option) =>
-          option
-            .setName("rol_ping")
-            .setDescription("Rolul mentionat in notificari")
-            .setRequired(false)
-        )
-        .addBooleanOption((option) =>
-          option
-            .setName("notifica_imediat")
-            .setDescription("Trimite si continutul deja live/publicat la prima verificare")
-            .setRequired(false)
-        )
-    )
+    .setDescription("Gestioneaza sursele existente")
     .addSubcommand((subcommand) =>
       subcommand
         .setName("modifica")
@@ -488,8 +452,76 @@ async function ensureAuthorized(interaction, store) {
   return false;
 }
 
+function cleanPathSegments(url) {
+  return url.pathname.split("/").map((part) => part.trim()).filter(Boolean);
+}
+
+function hostMatches(hostname, allowedHosts) {
+  const lower = hostname.toLowerCase();
+  return allowedHosts.some((host) => lower === host || lower.endsWith(`.${host}`));
+}
+
+function firstUsefulSegment(segments, blocked = []) {
+  return segments.find((segment) => !blocked.includes(segment.toLowerCase())) || null;
+}
+
+function extractUsernameFromLink(platform, url) {
+  const segments = cleanPathSegments(url);
+
+  if (platform === "rss") return url.toString();
+  if (platform === "twitch") return firstUsefulSegment(segments, ["directory", "downloads", "p", "settings"]);
+  if (platform === "kick") return firstUsefulSegment(segments, ["category", "categories", "video"]);
+  if (platform === "tiktok") {
+    const user = segments.find((segment) => segment.startsWith("@"));
+    return user ? user.replace(/^@/, "") : null;
+  }
+  if (platform === "youtube") {
+    if (segments[0] === "channel" && segments[1]?.startsWith("UC")) return segments[1];
+    if (segments[0]?.startsWith("@")) return segments[0];
+    if (["c", "user"].includes(segments[0]) && segments[1]) return segments[1];
+    return null;
+  }
+  if (platform === "instagram") return firstUsefulSegment(segments, ["p", "reel", "tv", "stories", "explore"]);
+  if (platform === "facebook") return firstUsefulSegment(segments, ["watch", "reel", "reels", "live", "share"]);
+  if (platform === "trovo") {
+    if (segments[0] === "s" && segments[1]) return segments[1];
+    return firstUsefulSegment(segments, ["category", "clip", "video"]);
+  }
+  if (platform === "rumble") {
+    if (["c", "user"].includes(segments[0]) && segments[1]) return segments[1];
+    return firstUsefulSegment(segments, ["v", "embed"]);
+  }
+  if (platform === "x") return firstUsefulSegment(segments, ["i", "home", "explore", "search"]);
+
+  return firstUsefulSegment(segments);
+}
+
+async function validatePlatformLink(platform, rawLink) {
+  const safeUrl = await assertSafeExternalUrl(rawLink);
+  const url = new URL(safeUrl);
+  const allowedHosts = PLATFORM_HOSTS[platform];
+
+  if (allowedHosts && !hostMatches(url.hostname, allowedHosts)) {
+    throw new Error(`Linkul nu este valid pentru ${platformLabel(platform)}. Ai pus un domeniu pentru alta platforma.`);
+  }
+
+  const username = extractUsernameFromLink(platform, url);
+  if (!username) {
+    throw new Error(`Linkul canalului nu este valid pentru ${platformLabel(platform)}.`);
+  }
+
+  return { url: safeUrl, username };
+}
+
+function validateTagInput(tagMode, mentionRole) {
+  if (tagMode === "role" && !mentionRole) {
+    return "Ai ales tag Rol, deci trebuie sa completezi si rol_ping.";
+  }
+  return null;
+}
+
 function isManualOnlySource(source) {
-  return source.type === "live" && !LIVE_NATIVE_PLATFORMS.has(source.platform);
+  return source.manualOnly === true;
 }
 
 async function validateSourceInput(input) {
@@ -497,7 +529,21 @@ async function validateSourceInput(input) {
     await assertSafeExternalUrl(input.feedUrl);
   }
 
+  if (input.manualOnly) return null;
+
   if (input.type === "live") {
+    if (!LIVE_NATIVE_PLATFORMS.has(input.platform)) {
+      return `${platformLabel(input.platform)} nu are verificare live automata in bot. Alege mod Manual.`;
+    }
+    if (input.platform === "twitch" && (!process.env.TWITCH_CLIENT_ID || !process.env.TWITCH_CLIENT_SECRET)) {
+      return "Pentru live Twitch automat trebuie TWITCH_CLIENT_ID si TWITCH_CLIENT_SECRET pe Railway.";
+    }
+    if (input.platform === "youtube" && !process.env.YOUTUBE_API_KEY) {
+      return "Pentru live YouTube automat trebuie YOUTUBE_API_KEY pe Railway.";
+    }
+    if (input.platform === "tiktok" && !process.env.TIKTOOLS_API_KEY) {
+      return "Pentru live TikTok automat trebuie TIKTOOLS_API_KEY pe Railway.";
+    }
     return null;
   }
 
@@ -517,13 +563,14 @@ async function validateSourceInput(input) {
     }
   }
 
-  if (input.platform === "tiktok") {
-    return null;
+  if (input.platform === "tiktok" && !process.env.RSSHUB_URL) {
+    return "Pentru video TikTok automat trebuie un feed valid sau RSSHUB_URL setat pe Railway.";
   }
 
-  return `Pentru video ${platformLabel(input.platform)} trebuie campul feed cu un RSS/Atom https permis.`;
-}
+  if (input.platform === "tiktok") return null;
 
+  return `Pentru video ${platformLabel(input.platform)} automat trebuie campul feed cu un RSS/Atom https permis.`;
+}
 function findSource(store, id) {
   return store.snapshot().sources.find((source) => source.id === Number(id)) || null;
 }
@@ -550,39 +597,56 @@ function sourceListText(sources) {
 }
 
 function sourceModeNote(source) {
-  if (!source.manualOnly) return "";
-  return "\nAceasta platforma live este setata manual: foloseste /streamer anunta cand intra live.";
+  if (!source.manualOnly) return "\nMod: automat.";
+  return "\nMod: manual. Foloseste /streamer anunta cand vrei sa trimiti notificarea.";
+}
+
+function discordUserName(user) {
+  return user.globalName || user.username || user.tag || user.id;
 }
 
 async function addSourceFromDirectCommand(interaction, store, type) {
+  const discordUser = interaction.options.getUser("user_discord", true);
   const platform = interaction.options.getString("platforma", true);
-  const username = interaction.options.getString("utilizator", true).trim();
+  const rawLink = interaction.options.getString("link", true).trim();
   const channel = interaction.options.getChannel("canal", true);
-  const displayName = interaction.options.getString("nume")?.trim() || username;
-  const url = interaction.options.getString("url")?.trim() || null;
-  const feedUrl = type === "video" ? interaction.options.getString("feed")?.trim() || null : null;
-  const customMessage = interaction.options.getString("mesaj")?.trim() || null;
+  const customMessage = interaction.options.getString("mesaj", true).trim();
+  const tagMode = interaction.options.getString("tag", true);
+  const mode = interaction.options.getString("mod", true);
   const mentionRole = interaction.options.getRole("rol_ping");
-  const notifyOnFirstCheck = interaction.options.getBoolean("notifica_imediat") === true;
+  const feedInput = type === "video" ? interaction.options.getString("feed")?.trim() || null : null;
+
+  const tagError = validateTagInput(tagMode, mentionRole);
+  if (tagError) {
+    await interaction.reply({ content: tagError, ephemeral: true });
+    return;
+  }
+
+  let linkData;
+  try {
+    linkData = await validatePlatformLink(platform, rawLink);
+  } catch (error) {
+    await interaction.reply({ content: error.message, ephemeral: true });
+    return;
+  }
 
   const input = {
     type,
     platform,
-    username,
-    displayName,
+    username: linkData.username,
+    displayName: discordUserName(discordUser),
+    discordUserId: discordUser.id,
+    tagMode,
     channelId: channel.id,
-    mentionRoleId: mentionRole?.id || null,
-    url,
-    feedUrl,
+    mentionRoleId: tagMode === "role" ? mentionRole.id : null,
+    url: linkData.url,
+    feedUrl: platform === "rss" ? linkData.url : feedInput,
     customMessage,
-    enabled: true,
-    manualOnly: false,
+    enabled: mode === "auto",
+    manualOnly: mode === "manual",
     cursorReady: false,
-    notifyOnFirstCheck
+    notifyOnFirstCheck: false
   };
-
-  input.manualOnly = isManualOnlySource(input);
-  if (input.manualOnly) input.enabled = false;
 
   const validationError = await validateSourceInput(input);
   if (validationError) {
@@ -596,7 +660,6 @@ async function addSourceFromDirectCommand(interaction, store, type) {
     ephemeral: true
   });
 }
-
 async function handleStreamer(interaction, store) {
   const subcommand = interaction.options.getSubcommand();
 
@@ -908,13 +971,12 @@ async function handleHelp(interaction) {
     content: [
       "Comenzi Bot Streamers CLT:",
       "/help - Afiseaza toate comenzile botului.",
-      "/live - Adauga o sursa live si selecteaza canalul de notificari.",
-      "/video - Adauga o sursa video si selecteaza canalul de notificari.",
+      "/live - Adauga live: user Discord, platforma, link canal, canal Discord, mesaj, tag si mod.",
+      "/video - Adauga video: user Discord, platforma, link canal, canal Discord, mesaj, tag si mod.",
       "/status - Afiseaza statusul botului si configuratia.",
       "/canal seteaza - Seteaza canalul implicit pentru live sau video.",
       "/canal arata - Afiseaza canalele implicite.",
       "/canal sterge - Sterge canalul implicit pentru un tip.",
-      "/streamer adauga - Adauga o sursa live/video.",
       "/streamer modifica - Modifica o sursa existenta.",
       "/streamer sterge - Sterge o sursa.",
       "/streamer lista - Afiseaza sursele configurate.",

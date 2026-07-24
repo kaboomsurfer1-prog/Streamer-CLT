@@ -44,6 +44,8 @@ function normalizeSource(source) {
     platform: source.platform,
     username: source.username,
     displayName: source.displayName || source.username,
+    discordUserId: source.discordUserId || null,
+    tagMode: source.tagMode || (source.mentionRoleId ? "role" : source.discordUserId ? "user" : "none"),
     channelId: source.channelId || null,
     mentionRoleId: source.mentionRoleId || null,
     url: source.url || null,

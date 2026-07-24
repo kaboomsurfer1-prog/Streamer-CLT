@@ -4,10 +4,11 @@ const { defaultPlatformUrl, formatMessage } = require("./messages");
 const { getLatestRssItem } = require("./providers/rss");
 const { getKickLive } = require("./providers/kick");
 const { getTwitchLive } = require("./providers/twitch");
+const { getTikTokLive } = require("./providers/tiktok");
 const { getLatestYouTubeVideo, getYouTubeLive } = require("./providers/youtube");
 const logger = require("./logger");
 
-const LIVE_NATIVE_PLATFORMS = new Set(["twitch", "youtube", "kick"]);
+const LIVE_NATIVE_PLATFORMS = new Set(["twitch", "youtube", "kick", "tiktok"]);
 
 function getTargetChannelId(data, source) {
   return source.channelId || data.defaultChannels[source.type] || null;
@@ -40,6 +41,10 @@ async function getLatestEvent(source) {
     return getYouTubeLive(source);
   }
 
+  if (source.type === "live" && source.platform === "tiktok") {
+    return getTikTokLive(source);
+  }
+
   if (source.type === "live" && source.platform === "kick") {
     return getKickLive(source);
   }
@@ -69,6 +74,26 @@ async function fetchTextChannel(client, channelId) {
   return channel;
 }
 
+function buildAllowedMentions(source) {
+  const roles = [];
+  const users = [];
+  const parse = [];
+
+  if (source.tagMode === "everyone" || source.tagMode === "here") {
+    parse.push("everyone");
+  }
+
+  if (source.tagMode === "role" && source.mentionRoleId) {
+    roles.push(source.mentionRoleId);
+  }
+
+  if (source.tagMode === "user" && source.discordUserId) {
+    users.push(source.discordUserId);
+  }
+
+  return { roles, users, parse };
+}
+
 async function sendNotification(client, data, source, event) {
   const channelId = getTargetChannelId(data, source);
   if (!channelId) {
@@ -78,15 +103,10 @@ async function sendNotification(client, data, source, event) {
   const channel = await fetchTextChannel(client, channelId);
   const template = source.customMessage || data.templates[source.type];
   const content = formatMessage(template, { ...source, channelId }, event);
-  const roles = source.mentionRoleId ? [source.mentionRoleId] : [];
 
   await channel.send({
     content,
-    allowedMentions: {
-      roles,
-      users: [],
-      parse: []
-    }
+    allowedMentions: buildAllowedMentions(source)
   });
 }
 

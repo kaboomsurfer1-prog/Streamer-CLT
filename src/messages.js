@@ -37,15 +37,26 @@ function defaultPlatformUrl(platform, username) {
   return urls[platform] || "";
 }
 
+function sourceMention(source) {
+  if (source.tagMode === "everyone") return "@everyone";
+  if (source.tagMode === "here") return "@here";
+  if (source.tagMode === "role" && source.mentionRoleId) return `<@&${source.mentionRoleId}>`;
+  if (source.tagMode === "user" && source.discordUserId) return `<@${source.discordUserId}>`;
+  if (source.mentionRoleId) return `<@&${source.mentionRoleId}>`;
+  return "";
+}
+
 function truncateDiscordMessage(content) {
   if (content.length <= 1900) return content;
   return `${content.slice(0, 1897)}...`;
 }
 
 function formatMessage(template, source, event) {
-  const mention = source.mentionRoleId ? `<@&${source.mentionRoleId}>` : "";
+  const mention = sourceMention(source);
+  const discordUser = source.discordUserId ? `<@${source.discordUserId}>` : "";
   const values = {
     mention,
+    discordUser,
     creator: source.displayName || source.username,
     username: source.username,
     platform: platformLabel(source.platform),
@@ -65,17 +76,28 @@ function formatMessage(template, source, event) {
   return truncateDiscordMessage(content.replace(/[ \t]+\n/g, "\n").trim());
 }
 
+function tagLabel(source) {
+  if (source.tagMode === "everyone") return "@everyone";
+  if (source.tagMode === "here") return "@here";
+  if (source.tagMode === "role" && source.mentionRoleId) return `<@&${source.mentionRoleId}>`;
+  if (source.tagMode === "user" && source.discordUserId) return `<@${source.discordUserId}>`;
+  return "fara tag";
+}
+
 function describeSource(source) {
-  const state = source.manualOnly ? "MANUAL" : source.enabled ? "ON" : "OFF";
+  const state = source.manualOnly ? "MANUAL" : source.enabled ? "AUTO" : "OFF";
   const destination = source.channelId ? `<#${source.channelId}>` : "canal implicit";
+  const discordUser = source.discordUserId ? ` | user: <@${source.discordUserId}>` : "";
+  const tag = ` | tag: ${tagLabel(source)}`;
   const feed = source.feedUrl ? " | feed" : "";
   const error = source.lastError ? ` | eroare: ${source.lastError}` : "";
-  return `#${source.id} [${state}] ${source.type}/${platformLabel(source.platform)} ${source.displayName} -> ${destination}${feed}${error}`;
+  return `#${source.id} [${state}] ${source.type}/${platformLabel(source.platform)} ${source.displayName} -> ${destination}${discordUser}${tag}${feed}${error}`;
 }
 
 module.exports = {
   defaultPlatformUrl,
   describeSource,
   formatMessage,
-  platformLabel
+  platformLabel,
+  sourceMention
 };
